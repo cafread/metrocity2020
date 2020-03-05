@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+  <head>
+    <style>
+      body {margin: 0;}
+      #container {
+        position: relative;
+        overflow: hidden;
+        z-index: 0;
+      }
+      #map {
+        width:100%;
+        height:100%;
+      }
+      #points {
+        width:100%;
+        height:100%;
+        position:relative;
+        z-index:100;
+      }
+      .layer {
+        position:absolute;
+        z-index:-10;
+      }
+      .tile {
+        pointer-events: none;
+        position: absolute;
+        width: 256px;
+        height: 256px;
+      }
+      .info {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        padding: 20px;
+        background: #000;
+        color: #fff;
+        width: 100%;
+        height: 18px;
+        z-index: 1000;
+        font-family:Helvetica, Arial, sans-serif;
+        font-size:16px;
+      }			
+    </style>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://d3js.org/d3.geo.tile.v0.min.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <div class="layer"></div>
+      <div id="map">
+        <canvas>
+          <div id="points"></div>
+        </canvas>
+      </div>
+    </div>
+    <script type='text/javascript' src="canvas_cities.js"></script>
+  </body>
+</html>
