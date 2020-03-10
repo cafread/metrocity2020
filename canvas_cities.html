@@ -1,64 +1,10 @@
 <!DOCTYPE html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <style>
-      body {margin: 0;}
-      #container {
-        position: relative;
-        overflow: hidden;
-        z-index: 0;
-      }
-      #map {
-        width:100%;
-        height:100%;
-      }
-      #points {
-        width:100%;
-        height:100%;
-        position:relative;
-        z-index:100;
-      }
-      .layer {
-        position:absolute;
-        z-index:-10;
-      }
-      .tile {
-        pointer-events: none;
-        position: absolute;
-        width: 256px;
-        height: 256px;
-      }
-      .info {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        padding: 20px;
-        background: #000;
-        color: #fff;
-        width: 100%;
-        height: 18px;
-        z-index: 1000;
-        font-family:Helvetica, Arial, sans-serif;
-        font-size:16px;
-      }
-      .credit {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        padding: 9px 20px;
-        color: #fff;
-        font-family: Helvetica, Arial, sans-serif;
-        font-size: 13px;
-        z-index: 1000;
-      }
-      .credit a {
-        text-decoration: none;
-        color: #ddd;
-      }
-    </style>
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/d3.geo.tile.v0.min.js"></script>
     <script type='text/javascript' src="quadtree.js"></script>
+    <link href='canvas_cities.css' rel='stylesheet' type='text/css'>
   </head>
   <body>
     <div id="container">
@@ -68,7 +14,7 @@
           <div id="points"></div>
         </canvas>
       </div>
-      <div class="credit"><p>Tiles &copy; <a href="http://cartodb.com/attributions">CartoDB</a></p></div>
+      <div class="credit"><p>Data &copy; <a href="https://www.geonames.org/">GeoNames</a> Tiles &copy; <a href="https://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
     <script type='text/javascript' src="canvas_cities.js"></script>
   </body>
