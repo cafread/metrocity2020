@@ -1,3 +1,4 @@
+// Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 let width = 1600;
 let height = 900;
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
@@ -29,7 +30,7 @@ let locations = d3.select('#points');
 let layer = d3.select('.layer');
 let info = base.append("div").attr("class", "info");
 let quadtree;
-zoomed(); // Initial draw
+zoomed();
 
 function createMap (dataset) {
   let rad = Math.pow(zoom.scale(), 0.4) / 50;
@@ -48,7 +49,6 @@ function createMap (dataset) {
 }
 function drawCanvas () {
   let elements = locations.selectAll("points.arc");
-  // {i: d.i, n: d.n, la: d.la, lo: d.lo, p: d.p}
   let qtBound = new Rectangle(0, 0, width, height);
   quadtree = new QuadTree(qtBound, 4);
   elements.each(function (d) {
@@ -93,7 +93,7 @@ function search (x, y) {
   // Given a projected x, y, return the most influential metro city
   let range = new Rectangle(...projBBox(x, y, true));
   let candidates = quadtree.query(range);
-  if (candidates.length === 0) return; // TODO: decide what to do here
+  if (candidates.length === 0) return;
   if (candidates.length === 1) {
     return {
       i: candidates[0].userData.i,
@@ -188,7 +188,6 @@ function mousemoved () {
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
   info.text(metroCity + thisPosition + thisLatLong);
 }
-//function mousemoved () {info.text(formatLocation(projection.invert(d3.mouse(this)), zoom.scale()));}
 function formatLocation (p, k) {
   let format = d3.format("." + Math.floor(Math.log(k) / 2 - 2) + "f");
   return (p[1] < 0 ? format(-p[1]) + " S" : format(p[1]) + " N") + " "

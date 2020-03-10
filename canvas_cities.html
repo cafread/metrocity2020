@@ -29,8 +29,8 @@
       }
       .info {
         position: absolute;
-        bottom: 0px;
-        left: 0px;
+        bottom: 0;
+        left: 0;
         padding: 20px;
         background: #000;
         color: #fff;
@@ -39,7 +39,21 @@
         z-index: 1000;
         font-family:Helvetica, Arial, sans-serif;
         font-size:16px;
-      }			
+      }
+      .credit {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        padding: 9px 20px;
+        color: #fff;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        z-index: 1000;
+      }
+      .credit a {
+        text-decoration: none;
+        color: #ddd;
+      }
     </style>
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/d3.geo.tile.v0.min.js"></script>
@@ -53,6 +67,7 @@
           <div id="points"></div>
         </canvas>
       </div>
+      <div class="credit"><p>Tiles &copy; <a href="http://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
     <script type='text/javascript' src="canvas_cities.js"></script>
   </body>
