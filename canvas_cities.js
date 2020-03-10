@@ -12,7 +12,8 @@ let projection = d3.geo.mercator()
 let zoom = d3.behavior.zoom()
     .scale(projection.scale() * 2 * Math.PI)
     .scaleExtent([1 << 9, 1 << 25])
-    .translate(projection([10, 10]).map(x => -x));
+    .translate(projection([10, 10]).map(x => -x))
+    .on("zoom", zoomed);
 let container = d3.select("#container")
     .style("width", width + "px")
     .style("height", height + "px")
@@ -26,44 +27,34 @@ let chart = d3.select('canvas')
 let context = chart.node().getContext('2d');
 let locations = d3.select('#points');
 let layer = d3.select('.layer');
+let info = base.append("div").attr("class", "info");
 let quadtree;
-let info = base.append("div")
-  .attr("class", "info");
 zoomed(); // Initial draw
 
 function createMap (dataset) {
-  const data = dataset.map(d => {
-    let proj = projection([d.lo, d.la]);
-    return [proj[0], proj[1], {i: d.i, n: d.n, la: d.la, lo: d.lo, p: d.p}];
-  });
-  //quadtree = d3.geom.quadtree()
-  //  .extent([[-1, -1], [width + 1, height + 1]])
-  //  (data);
-  let qtBound = new Rectangle(0, 0, width, height);
-  quadtree = new QuadTree(qtBound, 4);
-  data.forEach(d => {
-    let p = new Point(d[0], d[1], d[2]);
-    quadtree.insert(p);
-  });
-
   let rad = Math.pow(zoom.scale(), 0.4) / 50;
   let dataBinding = locations.selectAll("points.arc")
-    .data(data)
+    .data(dataset)
   		.enter()
       .append("points")
         .classed("arc", true)
-        .attr("x", d => d[0])
-        .attr("y", d => d[1])
+        .attr("x", d => projection([d.lo, d.la])[0])
+        .attr("y", d => projection([d.lo, d.la])[1])
         .attr("radius", rad)
-        .attr("id", d => d[2].i)
-        .attr("name", d => d[2].n)
+        .attr("id", d => d.i)
+        .attr("name", d => d.n)
         .attr("fillStyle", "#000000")
   drawCanvas();
 }
 function drawCanvas () {
-	let elements = locations.selectAll("points.arc");
+  let elements = locations.selectAll("points.arc");
+  // {i: d.i, n: d.n, la: d.la, lo: d.lo, p: d.p}
+  let qtBound = new Rectangle(0, 0, width, height);
+  quadtree = new QuadTree(qtBound, 4);
   elements.each(function (d) {
     let node = d3.select(this);
+    let pt = new Point(+node.attr("x"), +node.attr("y"), d);
+    quadtree.insert(pt);
     context.beginPath();
 		context.arc(node.attr("x"), node.attr("y"), node.attr("radius"), 0, 2 * Math.PI);
 		context.fillStyle = node.attr("fillStyle");
@@ -85,6 +76,7 @@ function zoomed () {
     .attr("x", d => projection([d.lo, d.la])[0])
     .attr("y", d => projection([d.lo, d.la])[1])
     .attr("radius", rad);
+    reDraw();
   let image = layer
     .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".tile")
@@ -122,7 +114,6 @@ function search (x, y) {
   });
   return cands.filter(d => d.d <= 100).sort((a, b) => b.s - a.s)[0];
 }
-
 // Basic conversions
 const deg2rad = (degs) => Math.PI * degs / 180.0;
 const rad2deg = (rads) => 180.0 * rads / Math.PI;
@@ -187,9 +178,8 @@ function prefixMatch (p) {
   return "";
 }
 function mousemoved () {
-  //let closestCity = quadtree.find(d3.mouse(this))[2].n;
   let metroCity = search(...d3.mouse(this));
-  if (metroCity) {
+  if (metroCity && metroCity.n) {
     metroCity = metroCity.n;
   } else {
     metroCity = "None";
@@ -198,6 +188,7 @@ function mousemoved () {
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
   info.text(metroCity + thisPosition + thisLatLong);
 }
+//function mousemoved () {info.text(formatLocation(projection.invert(d3.mouse(this)), zoom.scale()));}
 function formatLocation (p, k) {
   let format = d3.format("." + Math.floor(Math.log(k) / 2 - 2) + "f");
   return (p[1] < 0 ? format(-p[1]) + " S" : format(p[1]) + " N") + " "
@@ -219,4 +210,3 @@ function greatCircleKm (lat1, lon1, lat2, lon2) {
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
 }
-
