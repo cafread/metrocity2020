@@ -1,7 +1,7 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
-// QuadTree
+// Daniel Shiffman http://codingtra.in http://patreon.com/codingtrain https://github.com/CodingTrain/QuadTree
+// Implementation changed slightly so that only leaves can contain points
+// This reduces the number of points to consider when doing the final evaluation
+// Other than that mostly just whitespace edits
 class Point {
   constructor (x, y, data) {
     this.x = x;

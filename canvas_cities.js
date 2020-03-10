@@ -1,4 +1,5 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
+// Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
 let width = 1600;
 let height = 900;
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
