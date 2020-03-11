@@ -1,9 +1,10 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
-let width = 1600;
+let width = 1780;
 let height = 900;
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
-d3.json("2020cities15k.json", (err, dat) => {
+d3.json("2020cities15k_trimmed.json", (err, dat) => {
+  // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
   createMap(dat);
 });
@@ -13,7 +14,7 @@ let projection = d3.geo.mercator()
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
     .scale(projection.scale() * 2 * Math.PI)
-    .scaleExtent([1 << 9, 1 << 25])
+    .scaleExtent([1885, 1 << 27])
     .translate(projection([10, 10]).map(x => -x))
     .on("zoom", zoomed);
 let container = d3.select("#container")
@@ -54,6 +55,7 @@ function drawCanvas () {
   quadtree = new QuadTree(qtBound, 4);
   elements.each(function (d) {
     let node = d3.select(this);
+    //if (relevantLocs && relevantLocs.length > 0 && relevantLocs.indexOf(+node.attr("id")) === -1) return;
     let pt = new Point(+node.attr("x"), +node.attr("y"), d);
     quadtree.insert(pt);
     context.beginPath();
@@ -61,10 +63,24 @@ function drawCanvas () {
 		context.fillStyle = node.attr("fillStyle");
     context.fill();
     context.closePath();
-	});
+  });
+  if (relevantLocs && relevantLocs.length === 0) trimPoints (elements);
 }
+
+// This is the code which was used to generate the trimmed variant of the city data
+var relevantLocs = [];
+function trimPoints (elements) {
+  elements.each(function (d) {
+    let node = d3.select(this);
+    let mc = search(+node.attr("x"), +node.attr("y"));
+    if (mc && mc.i && +node.attr("id") === mc.i) relevantLocs.push(mc.i);
+  });
+  reDraw ();
+}
+
+
 function reDraw () {
-	context.clearRect(0, 0, width, height);
+  context.clearRect(0, 0, width, height);
 	drawCanvas();
 }
 function zoomed () {
