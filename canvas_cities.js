@@ -1,7 +1,8 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
-let width = 1776; // 16 x 111
-let height = 912; // 16 x 57
+let globScl = 1;
+let width = 1776 * globScl; // 16 x 111
+let height = 912 * globScl; // 16 x 57
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 var colorToId = {"#000000": 0};
 var idToColor = {"0": "#000000"};
@@ -16,7 +17,7 @@ d3.json("2020cities15k_trimmed.json", (err, dat) => {
 });
 let tile = d3.geo.tile().size([width, height]);
 let projection = d3.geo.mercator()
-    .scale(300)
+    .scale(globScl * 300)
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
     .scale(projection.scale() * 2 * Math.PI)
@@ -42,7 +43,7 @@ let outputContext = output.node().getContext('2d');
 let mapLayer = d3.select('.mapLayer');
 let info = base.append("div").attr("class", "info");
 let quadtree;
-let qtBound = new Rectangle(width / 2, height / 2, width, height);
+let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
 
 function createMap (dataset) {
@@ -97,7 +98,7 @@ function zoomed () {
     d.r = rad;
     return d;
   });
-  reDraw();
+  reDraw(); // Maybe call this with a boolean for hasScaled ?
   // Map tiles
   let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
   let image = mapLayer
@@ -226,7 +227,7 @@ function greatCircleKm (lat1, lon1, lat2, lon2) {
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
 }
-function mapMCs (scl=8) {
+function mapMCs (scl=16) {
   reDraw(); // Just to be sure that things are ready
   let xCount = Math.floor(width / scl);
   let yCount = Math.floor(height / scl);
@@ -306,4 +307,11 @@ function strColor (s) {
     hash |= 0; // Convert to 32bit integer
   }
   return "#" + (Math.abs(hash).toString(16) + "ffffff").substring(0, 6);
+}
+function saveResult () {
+  let outCanvas = document.getElementById("outputCanvas");
+  let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+  // TODO save projection of [0, 0], [width, 0], [0, height], [width, height]
+  // TODO save idToColor
+  window.location.href=outImage;
 }
