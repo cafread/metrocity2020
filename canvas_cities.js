@@ -107,7 +107,7 @@ function zoomed () {
   image.exit().remove();
   image.enter().append("img")
     .attr("class", "tile")
-    .attr("src",   d => "http://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
+    .attr("src",   d => "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
 }
@@ -238,7 +238,7 @@ function mapMCs (scl=8) {
 }
 // Note there are 1.6 million pixels, many of which will contain nothing
 // so the code should be written with this in mind rather than going at it 1.6 million times!
-function shadeMap (x=0, y=0, w=8) { // Will tighten size later once performance is acceptable
+function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality balance is off
   // width = height as square
   // This is intended for web workers - many 16x16 threads can be triggered
   // Note that x is the left, y, the top, not the centroid as in a Rectangle
