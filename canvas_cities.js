@@ -1,11 +1,17 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
-let width = 1780;
-let height = 900;
+let width = 1776; // 16 x 111
+let height = 912; // 16 x 57
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
+var colorToId = {"#000000": 0};
+var idToColor = {"0": "#000000"};
+var cityData = [];
 d3.json("2020cities15k_trimmed.json", (err, dat) => {
+//d3.json("2020cities15k.json", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
+  cityData = dat;
+  dat.forEach(d => colorGen(d.i, d.n));
   createMap(dat);
 });
 let tile = d3.geo.tile().size([width, height]);
@@ -23,51 +29,45 @@ let container = d3.select("#container")
     .call(zoom)
     .on("mousemove", mousemoved);
 let base = d3.select('#map');
-let chart = d3.select('canvas')
-    .attr("class", "layer")
+let chart = d3.select('#citiesCanvas')
+    .attr("class", "mapLayer")
     .attr('width', width)
     .attr('height', height);
-let context = chart.node().getContext('2d');
-let locations = d3.select('#points');
-let layer = d3.select('.layer');
+let output = d3.select('#outputCanvas')
+    .attr('class', 'outputLayer')
+    .attr('width', width)
+    .attr('height', height);
+let citiesContext = chart.node().getContext('2d');
+let outputContext = output.node().getContext('2d');
+let mapLayer = d3.select('.mapLayer');
 let info = base.append("div").attr("class", "info");
 let quadtree;
+let qtBound = new Rectangle(width / 2, height / 2, width, height);
 zoomed();
 
 function createMap (dataset) {
-  let rad = Math.pow(zoom.scale(), 0.4) / 50;
-  let dataBinding = locations.selectAll("points.arc")
-    .data(dataset)
-  		.enter()
-      .append("points")
-        .classed("arc", true)
-        .attr("x", d => projection([d.lo, d.la])[0])
-        .attr("y", d => projection([d.lo, d.la])[1])
-        .attr("radius", rad)
-        .attr("id", d => d.i)
-        .attr("name", d => d.n)
-        .attr("fillStyle", "#000000")
+  let rad = Math.pow(zoom.scale(), 0.4) / 20;
+  cityData = cityData.map(d => {
+    [d.x, d.y] = projection([d.lo, d.la]);
+    d.r = rad;
+    d.f = idToColor[d.i];
+    return d;
+  });
   drawCanvas();
 }
 function drawCanvas () {
-  let elements = locations.selectAll("points.arc");
-  let qtBound = new Rectangle(0, 0, width, height);
-  quadtree = new QuadTree(qtBound, 4);
-  elements.each(function (d) {
-    let node = d3.select(this);
-    //if (relevantLocs && relevantLocs.length > 0 && relevantLocs.indexOf(+node.attr("id")) === -1) return;
-    let pt = new Point(+node.attr("x"), +node.attr("y"), d);
+  quadtree = new QuadTree(qtBound, 1);
+  cityData.forEach(d => {
+    let pt = new Point(d.x, d.y, d);
     quadtree.insert(pt);
-    context.beginPath();
-		context.arc(node.attr("x"), node.attr("y"), node.attr("radius"), 0, 2 * Math.PI);
-		context.fillStyle = node.attr("fillStyle");
-    context.fill();
-    context.closePath();
+    citiesContext.beginPath();
+		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
+		citiesContext.fillStyle = d.f;
+    citiesContext.fill();
+    citiesContext.closePath();
   });
-  if (relevantLocs && relevantLocs.length === 0) trimPoints (elements);
 }
-
-// This is the code which was used to generate the trimmed variant of the city data
+/*// This is the code which was used to generate the trimmed variant of the city data
 var relevantLocs = [];
 function trimPoints (elements) {
   elements.each(function (d) {
@@ -76,25 +76,31 @@ function trimPoints (elements) {
     if (mc && mc.i && +node.attr("id") === mc.i) relevantLocs.push(mc.i);
   });
   reDraw ();
-}
-
-
+}*/
 function reDraw () {
-  context.clearRect(0, 0, width, height);
-	drawCanvas();
+  // Clear cities
+  citiesContext.clearRect(0, 0, width, height);
+  // Clear the output
+  outputContext.clearRect(0, 0, width, height);
+  // Plot cities again
+  drawCanvas();
 }
 function zoomed () {
-  let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
-  let rad = Math.pow(zoom.scale(), 0.4) / 50;
+  // Update projection
   projection
     .scale(zoom.scale() / 2 / Math.PI)
     .translate(zoom.translate());
-	d3.selectAll("points.arc")
-    .attr("x", d => projection([d.lo, d.la])[0])
-    .attr("y", d => projection([d.lo, d.la])[1])
-    .attr("radius", rad);
-    reDraw();
-  let image = layer
+  // Re-project cities
+  let rad = Math.pow(zoom.scale(), 0.4) / 20;
+  cityData = cityData.map(d => {
+    [d.x, d.y] = projection([d.lo, d.la]);
+    d.r = rad;
+    return d;
+  });
+  reDraw();
+  // Map tiles
+  let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
+  let image = mapLayer
     .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".tile")
       .data(tiles, d => d);
@@ -111,12 +117,6 @@ function search (x, y) {
   let range = new Rectangle(...projBBox(x, y, true));
   let candidates = quadtree.query(range);
   if (candidates.length === 0) return;
-  if (candidates.length === 1) {
-    return {
-      i: candidates[0].userData.i,
-      n: candidates[0].userData.n
-    };
-  }
   // Caution here to not mutate the points
   let [lo, la] = projection.invert([x, y]);
   let cands = candidates.map(d => {
@@ -149,7 +149,7 @@ function projBBox (cx, cy, simple) {
     let y = projection([lo, la + latAdj])[1];
     let w = projection([lo + longAdj, la])[0] - x;
     let h = projection([lo, la - latAdj])[1] - y;
-    return [x, y, w, h];
+    return [x + w / 2, y + h / 2, w, h];
   }
   // Complex method for verification
   // Semi-axes of WGS-84 geoidal reference
@@ -183,7 +183,7 @@ function projBBox (cx, cy, simple) {
   let y = projection([lo, latMax])[1];
   let h = projection([lo, latMin])[1] - y;
   let w = projection([lonMax, la])[0] - x;
-  return [x, y, w, h];
+  return [x + w / 2, y + h / 2, w, h];
 }
 function matrix3d (scale, translate) {
   let k = scale / 256, r = scale % 1 ? Number : Math.round;
@@ -225,4 +225,85 @@ function greatCircleKm (lat1, lon1, lat2, lon2) {
 }
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
+}
+function mapMCs (scl=8) {
+  reDraw(); // Just to be sure that things are ready
+  let xCount = Math.floor(width / scl);
+  let yCount = Math.floor(height / scl);
+  for (let i = 0; i < xCount; i++) {
+    for (let j = 0; j < yCount; j++) {
+      shadeMap(i * scl, j * scl, scl);
+    }
+  }
+}
+// Note there are 1.6 million pixels, many of which will contain nothing
+// so the code should be written with this in mind rather than going at it 1.6 million times!
+function shadeMap (x=0, y=0, w=8) { // Will tighten size later once performance is acceptable
+  // width = height as square
+  // This is intended for web workers - many 16x16 threads can be triggered
+  // Note that x is the left, y, the top, not the centroid as in a Rectangle
+  // 0, 0, 16 are defaults for the initial call
+  // This will be called recursively for dense areas
+  let MC = {
+    nw: search(x    , y    ), // North West corner
+    ne: search(x + w, y    ), // North East corner
+    sw: search(x    , y + w), // South West corner
+    se: search(x + w, y + w)  // South East corner
+  };
+  if (mcEqual(MC)) {
+    // Draw the full size rectangle on the canvas
+    let outputId = MC.nw ? MC.nw.i : 0;
+    if (outputId > 0) {
+      outputContext.fillStyle = idToColor[outputId];
+      outputContext.fillRect(x, y, w, w);
+    }
+  } else if (w === 2) {
+    // Draw corner points
+    let corners = ["nw", "ne", "sw", "se"];
+    let outputId;
+    for (let c of corners) {
+      outputId = MC[c] ? MC[c].i : 0;
+      if (outputId > 0) {
+        outputContext.fillStyle = idToColor[outputId];
+        outputContext.fillRect(x, y, w, w);
+      }
+    }
+  } else {
+    // Sub-divide
+    shadeMap(x,       y      , w/2, w/2);
+    shadeMap(x + w/2, y      , w/2, w/2);
+    shadeMap(x      , y + w/2, w/2, w/2);
+    shadeMap(x + w/2, y + w/2, w/2, w/2);
+  } 
+  // let imgData = outputContext.getImageData(x, y, w, h);
+}
+function mcEqual (mc4) { // Test if four corner MCs have the same id
+  let nw = mc4.nw ? mc4.nw.i : 0;
+  let ne = mc4.ne ? mc4.ne.i : 0;
+  if (nw !== ne) return false;
+  let sw = mc4.sw ? mc4.sw.i : 0;
+  if (nw !== sw) return false;
+  let se = mc4.se ? mc4.se.i : 0;
+  return nw === se;
+}
+function colorGen (id, name) {
+  // Annoyingly, this might need to be rgba rather than hexS
+  // Takes the details for metrocity and inserts into colorKey a unique hexadecimal colour which can be mapped back to the id
+  if (idToColor.hasOwnProperty(id)) return; // Dupe check
+  let colorCode = strColor(name + id.toString());
+  while (colorToId.hasOwnProperty(colorCode)) { // Dupe check
+    colorCode = strColor(name + id.toString() + Math.random(1000).toString());
+  }
+  colorToId[colorCode] = id;
+  idToColor[id] = colorCode;
+}
+function strColor (s) {
+  let hash = 0, i, chr;
+  if (s.length === 0) return "#000000";
+  for (i = 0; i < s.length; i++) {
+    chr   = s.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return "#" + (Math.abs(hash).toString(16) + "ffffff").substring(0, 6);
 }

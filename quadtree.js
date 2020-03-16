@@ -1,7 +1,6 @@
 // Daniel Shiffman http://codingtra.in http://patreon.com/codingtrain https://github.com/CodingTrain/QuadTree
 // Implementation changed slightly so that only leaves can contain points
-// This reduces the number of points to consider when doing the final evaluation
-// Other than that mostly just whitespace edits
+// Also fixed a bug with subdivide so new x, y are correct
 class Point {
   constructor (x, y, data) {
     this.x = x;
@@ -22,48 +21,16 @@ class Rectangle {
   get top()    {return this.y - this.h / 2;}
   get bottom() {return this.y + this.h / 2;}
   contains (point) {
-    return (point.x >= this.x - this.w &&
-      point.x <= this.x + this.w &&
-      point.y >= this.y - this.h &&
-      point.y <= this.y + this.h);
+    return (point.x >= this.x - this.w / 2 &&
+      point.x <= this.x + this.w / 2 &&
+      point.y >= this.y - this.h / 2 &&
+      point.y <= this.y + this.h / 2);
   }
   intersects (range) {
     return !(range.x - range.w > this.x + this.w ||
       range.x + range.w < this.x - this.w ||
       range.y - range.h > this.y + this.h ||
       range.y + range.h < this.y - this.h);
-  }
-}
-
-// Circle class for a circle shaped query
-class Circle {
-  constructor (x, y, r) {
-    this.x = x;
-    this.y = y;
-    this.r = r;
-    this.rSquared = this.r * this.r;
-  }
-  contains (point) {
-    // Check if the point is in the circle by checking if the euclidean distance of
-    // the point and the center of the circle if smaller or equal to the radius of
-    // the circle
-    let d = Math.pow((point.x - this.x), 2) + Math.pow((point.y - this.y), 2);
-    return d <= this.rSquared;
-  }
-  intersects (range) {
-    let xDist = Math.abs(range.x - this.x);
-    let yDist = Math.abs(range.y - this.y);
-    // Radius of the circle
-    let r = this.r;
-    let w = range.w;
-    let h = range.h;
-    let edges = Math.pow((xDist - w), 2) + Math.pow((yDist - h), 2);
-    // No intersection
-    if (xDist > (r + w) || yDist > (r + h)) return false;
-    // Intersection within the circle
-    if (xDist <= w || yDist <= h) return true;
-    // Intersection on the edge of the circle
-    return edges <= this.rSquared;
   }
 }
 
@@ -79,111 +46,30 @@ class QuadTree {
     this.divided = false;
   }
 
-  static create () {
-    let DEFAULT_CAPACITY = 8;
-    if (arguments.length === 0) {
-      if (typeof width  === "undefined") throw new TypeError("No global width defined");
-      if (typeof height === "undefined") throw new TypeError("No global height defined");
-      let bounds = new Rectangle(width / 2, height / 2, width, height);
-      return new QuadTree(bounds, DEFAULT_CAPACITY);
-    }
-    if (arguments[0] instanceof Rectangle) {
-      let capacity = arguments[1] || DEFAULT_CAPACITY;
-      return new QuadTree(arguments[0], capacity);
-    }
-    if (typeof arguments[0] === "number" &&
-        typeof arguments[1] === "number" &&
-        typeof arguments[2] === "number" &&
-        typeof arguments[3] === "number") {
-      let capacity = arguments[4] || DEFAULT_CAPACITY;
-      return new QuadTree(new Rectangle(arguments[0], arguments[1], arguments[2], arguments[3]), capacity);
-    }
-    throw new TypeError('Invalid parameters');
-  }
-
-  toJSON (isChild) {
-    let obj = {points: this.points};
-    if (this.divided) {
-      if (this.northeast.points.length > 0) obj.ne = this.northeast.toJSON(true);
-      if (this.northwest.points.length > 0) obj.nw = this.northwest.toJSON(true);
-      if (this.southeast.points.length > 0) obj.se = this.southeast.toJSON(true);
-      if (this.southwest.points.length > 0) obj.sw = this.southwest.toJSON(true);
-    }
-    if (!isChild) {
-      obj.capacity = this.capacity;
-      obj.x = this.boundary.x;
-      obj.y = this.boundary.y;
-      obj.w = this.boundary.w;
-      obj.h = this.boundary.h;
-    }
-    return obj;
-  }
-
-  static fromJSON (obj, x, y, w, h, capacity) {
-    if (typeof x === "undefined") {
-      if ("x" in obj) {
-        x = obj.x;
-        y = obj.y;
-        w = obj.w;
-        h = obj.h;
-        capacity = obj.capacity;
-      } else {
-        throw TypeError("JSON missing boundary information");
-      }
-    }
-    let qt = new QuadTree(new Rectangle(x, y, w, h), capacity);
-    qt.points = obj.points;
-    if ("ne" in obj || "nw" in obj || "se" in obj || "sw" in obj) {
-      let x = qt.boundary.x;
-      let y = qt.boundary.y;
-      let w = qt.boundary.w / 2;
-      let h = qt.boundary.h / 2;
-
-      if ("ne" in obj) {
-        qt.northeast = QuadTree.fromJSON(obj.ne, x + w, y - h, w, h, capacity);
-      } else {
-        qt.northeast = new QuadTree(new Rectangle(x + w, y - h, w, h), capacity);
-      }
-      if ("nw" in obj) {
-        qt.northwest = QuadTree.fromJSON(obj.nw, x - w, y - h, w, h, capacity);
-      } else {
-        qt.northwest = new QuadTree(new Rectangle(x - w, y - h, w, h), capacity);
-      }
-      if ("se" in obj) {
-        qt.southeast = QuadTree.fromJSON(obj.se, x + w, y + h, w, h, capacity);
-      } else {
-        qt.southeast = new QuadTree(new Rectangle(x + w, y + h, w, h), capacity);
-      }
-      if ("sw" in obj) {
-        qt.southwest = QuadTree.fromJSON(obj.sw, x - w, y + h, w, h, capacity);
-      } else {
-        qt.southwest = new QuadTree(new Rectangle(x - w, y + h, w, h), capacity);
-      }
-
-      qt.divided = true;
-    }
-    return qt;
-  }
-
   subdivide () {
     let x = this.boundary.x;
     let y = this.boundary.y;
     let w = this.boundary.w / 2;
     let h = this.boundary.h / 2;
-
-    let ne = new Rectangle(x + w, y - h, w, h);
-    this.northeast = new QuadTree(ne, this.capacity);
-    let nw = new Rectangle(x - w, y - h, w, h);
-    this.northwest = new QuadTree(nw, this.capacity);
-    let se = new Rectangle(x + w, y + h, w, h);
-    this.southeast = new QuadTree(se, this.capacity);
-    let sw = new Rectangle(x - w, y + h, w, h);
-    this.southwest = new QuadTree(sw, this.capacity);
+    let nw = new Rectangle(x - w / 2, y - h / 2, w, h);
+    this.northwest = new QuadTree(nw, this.capacity + 1);
+    let ne = new Rectangle(x + w / 2, y - h / 2, w, h);
+    this.northeast = new QuadTree(ne, this.capacity + 1);
+    let sw = new Rectangle(x - w / 2, y + h / 2, w, h);
+    this.southwest = new QuadTree(sw, this.capacity + 1);
+    let se = new Rectangle(x + w / 2, y + h / 2, w, h);
+    this.southeast = new QuadTree(se, this.capacity + 1);
     // Move points to leaf nodes as final comparison is more costly than doing this
-    while (this.points.length) {
-      let point = this.points.pop();
-      this.northeast.insert(point) || this.northwest.insert(point) || this.southeast.insert(point) || this.southwest.insert(point);
+    for (let point of this.points) {
+      if (this.northwest.insert(point)) {
+      } else if (this.northeast.insert(point)) {
+      } else if (this.southwest.insert(point)) {
+      } else if (this.southeast.insert(point)) {
+      } else {
+        console.log('err');
+      }
     }
+    this.points = [];
     this.divided = true;
   }
 
@@ -194,7 +80,7 @@ class QuadTree {
       return true;
     }
     if (!this.divided) this.subdivide();
-    return (this.northeast.insert(point) || this.northwest.insert(point) || this.southeast.insert(point) || this.southwest.insert(point));
+    return (this.northwest.insert(point) || this.northeast.insert(point) || this.southwest.insert(point) || this.southeast.insert(point));
   }
 
   query (range, found) {
@@ -212,92 +98,26 @@ class QuadTree {
     }
     return found;
   }
-
-  closest (point, count, maxDistance) {
-    if (typeof point === "undefined") throw TypeError("Method 'closest' needs a point");
-    if (typeof count === "undefined") count = 1;
-    // Limit to number of points in this QuadTree
-    if (this.length == 0) return [];
-    if (this.length < count) return this.points;
-    if (typeof maxDistance === "undefined") {
-      // A circle that contains the entire QuadTree
-      const outerReach = Math.sqrt(
-        Math.pow(this.boundary.w, 2) + Math.pow(this.boundary.h, 2)
-      );
-      // Distance of query point from center
-      const pointDistance = Math.sqrt(
-        Math.pow(point.x, 2) + Math.pow(point.y, 2)
-      );
-      // One QuadTree size away from the query point
-      maxDistance = outerReach + pointDistance;
+  draw () {
+    if (this.divided === false) {
+      outputContext.fillStyle = getRandomColor();
+      outputContext.fillRect(this.boundary.left, this.boundary.top, this.boundary.w, this.boundary.h);
+    } else {
+      this.northwest.draw();
+      this.northeast.draw();
+      this.southwest.draw();
+      this.southeast.draw();
     }
-
-    // Binary search with Circle queries
-    let inner = 0;
-    let outer = maxDistance;
-    let limit = 8; // Limit to avoid infinite loops caused by ties
-    let points;
-    while (limit > 0) {
-      const radius = (inner + outer) / 2;
-      const range = new Circle(point.x, point.y, radius);
-      points = this.query(range);
-      if (points.length === count) {
-        return points; // Return when we hit the right size
-      } else if (points.length < count) {
-        inner = radius;
-      } else {
-        outer = radius;
-        limit --;
-      }
-    }
-    // Sort by squared distance
-    points.sort((a, b) => {
-      const aDist = Math.pow(point.x - a.x, 2) + Math.pow(point.y - a.y, 2);
-      const bDist = Math.pow(point.x - b.x, 2) + Math.pow(point.y - b.y, 2);
-      return aDist - bDist;
-    });
-    // Slice to return correct count (breaks ties)
-    return points.slice(0, count);
-  }
-
-  forEach (fn) {
-    this.points.forEach(fn);
-    if (this.divided) {
-      this.northeast.forEach(fn);
-      this.northwest.forEach(fn);
-      this.southeast.forEach(fn);
-      this.southwest.forEach(fn);
-    }
-  }
-
-  merge (other, capacity) {
-    let left   = Math.min(this.boundary.left,   other.boundary.left);
-    let right  = Math.max(this.boundary.right,  other.boundary.right);
-    let top    = Math.min(this.boundary.top,    other.boundary.top);
-    let bottom = Math.max(this.boundary.bottom, other.boundary.bottom);
-    let height = bottom - top;
-    let width  = right - left;
-    let midX   = left + width  / 2;
-    let midY   = top  + height / 2;
-    let boundary = new Rectangle(midX, midY, width, height);
-    let result = new QuadTree(boundary, capacity);
-    this.forEach(point => result.insert(point));
-    other.forEach(point => result.insert(point));
-    return result;
-  }
-
-  get length () {
-    let count = this.points.length;
-    if (this.divided) {
-      count += this.northwest.length;
-      count += this.northeast.length;
-      count += this.southwest.length;
-      count += this.southeast.length;
-    }
-    return count;
   }
 }
-
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 if (typeof module !== "undefined") {
-  module.exports = {Point, Rectangle, QuadTree, Circle};
+  module.exports = {Point, Rectangle, QuadTree, ShadeTree};
 }

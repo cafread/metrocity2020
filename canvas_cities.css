@@ -14,7 +14,10 @@ body {margin: 0;}
   position: relative;
   z-index: 100;
 }
-.layer {
+#outputCanvas {
+  opacity: 0.5;
+}
+.mapLayer {
   position: absolute;
   z-index: -10;
 }
