@@ -126,6 +126,7 @@ function search (x, y) {
     return {
       i: d.userData.i,
       n: d.userData.n,
+      p: d.userData.p,
       s: thisScore,
       d: thisDist
     };
@@ -198,7 +199,7 @@ function prefixMatch (p) {
 function mousemoved () {
   let metroCity = search(...d3.mouse(this));
   if (metroCity && metroCity.n) {
-    metroCity = metroCity.n;
+    metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
   } else {
     metroCity = "None";
   }
