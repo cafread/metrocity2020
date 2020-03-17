@@ -30,19 +30,20 @@ let container = d3.select("#container")
     .style("height", height + "px")
     .call(zoom)
     .on("mousemove", mousemoved);
-let base = d3.select('#map');
-let chart = d3.select('#citiesCanvas')
+let base = d3.select("#map");
+let chart = d3.select("#citiesCanvas")
     .attr("class", "mapLayer")
-    .attr('width', width)
-    .attr('height', height);
-let output = d3.select('#outputCanvas')
-    .attr('class', 'outputLayer')
-    .attr('width', width)
-    .attr('height', height);
-let citiesContext = chart.node().getContext('2d');
-let outputContext = output.node().getContext('2d');
-let mapLayer = d3.select('.mapLayer');
-let info = base.append("div").attr("class", "info");
+    .attr("width", width)
+    .attr("height", height);
+let output = d3.select("#outputCanvas")
+    .attr("class", "outputLayer")
+    .attr("width", width)
+    .attr("height", height);
+let penColor = "#FFFFFF";
+let citiesContext = chart.node().getContext("2d");
+let outputContext = output.node().getContext("2d");
+let mapLayer = d3.select(".mapLayer");
+let info = base.append("div").attr("id", "info");
 let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
@@ -348,4 +349,83 @@ function setOpacity (sliderValue) {
 }
 function toggleFrozen () {
   isFrozen = document.getElementById("frozenToggle").checked;
+  if (!isFrozen) {
+    document.getElementById("outputCanvas").style.cursor = "pointer";
+    d3.select("#outputCanvas").on("click", null);
+    allowDrawing = false;
+    busyDrawing = false
+  } else {
+    enableSample ();
+    penColor = "#FFFFFF";
+    document.getElementById("colorPot").style.background = penColor;
+  }
+}
+function enableSample () {
+  // Switch from observation mode to color sampling mode
+  // Set cursor to pipette to make this obvious
+  document.getElementById("outputCanvas").style.cursor = "url(pip.png), pointer";
+  d3.select("#outputCanvas").on("click", sampleOutput);
+  busyDrawing = false;
+  allowDrawing = false;
+}
+function enablePaint () {
+  // Switch to painting mode
+  // Set cursor to brush to make this obvious
+  document.getElementById("outputCanvas").style.cursor = "url(brush.png), pointer";
+  d3.select("#outputCanvas").on("click", sampleOutput);
+  // Do painty stuff here
+  d3.select("#colorPot").on("click", enableSample);
+  addPaint();
+}
+function sampleOutput () {
+  let [x, y] = d3.mouse(this);
+  let [r, g, b, a] = outputContext.getImageData(x, y, 1, 1).data;
+  let hexCode = "#" + toHex(r) + toHex(g) + toHex(b);
+  let rgba = "rgba(" + r + "," + g + "," + b + "," + a + ")"
+  penColor = hexCode;
+  document.getElementById("colorPot").style.background = penColor;
+  // TODO: add metro city name that we are painting here
+  enablePaint ();
+}
+function toHex (n) {
+  n = parseInt(n, 10);
+  if (isNaN(n)) return "00";
+  n = Math.max(0, Math.min(n, 255));
+  return "0123456789ABCDEF".charAt((n - n % 16) / 16) + "0123456789ABCDEF".charAt(n % 16);
+}
+
+// Requires Mootools 1.4.5
+// TODO move this into a class
+let myArt = document.getElementById("outputCanvas");
+let busyDrawing = false;
+let allowDrawing = false;
+myArt.onselectstart = () => {};
+myArt.unselectable = "on";
+myArt.style.MozUserSelect = "none";
+myArt.onmousedown = (event) => {
+  busyDrawing = allowDrawing;
+  outputContext.strokeStyle = penColor;
+  outputContext.lineWidth = document.getElementById("brushSize").value;
+  outputContext.lineCap = "round";
+  outputContext.beginPath();
+  outputContext.moveTo(event.pageX - myArt.offsetLeft, event.pageY);
+}
+myArt.onmouseup = () => busyDrawing = false;
+myArt.onmousemove = (event) => {
+  if (busyDrawing) {
+    outputContext.lineTo(event.pageX - myArt.offsetLeft, event.pageY);
+    outputContext.stroke();
+  }
+}
+myArt.onmouseleave = () => busyDrawing = false;
+function addPaint () {
+  if (penColor === "#000000" || penColor === "#FFFFFF") { // Erasing
+    outputContext.globalCompositeOperation = "destination-out";
+    outputContext.strokeStyle = "rgba(255,255,255,1)";
+  } else { // Drawing
+    outputContext.globalCompositeOperation = "source-over";
+    outputContext.strokeStyle = penColor;
+  }
+  // Now to do the painty bit itself
+  allowDrawing = true;
 }

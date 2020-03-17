@@ -119,5 +119,5 @@ function getRandomColor() {
   return color;
 }
 if (typeof module !== "undefined") {
-  module.exports = {Point, Rectangle, QuadTree, ShadeTree};
+  module.exports = {Point, Rectangle, QuadTree};
 }
