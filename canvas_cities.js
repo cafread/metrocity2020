@@ -1,12 +1,13 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
-let globScl = 1;
-let width = 1776 * globScl; // 16 x 111
-let height = 912 * globScl; // 16 x 57
-let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
-var colorToId = {"#000000": 0};
-var idToColor = {"0": "#000000"};
-var cityData = [];
+const globScl = 1;
+const width = 1776 * globScl; // 16 x 111
+const height = 912 * globScl; // 16 x 57
+const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
+let colorToId = {"#000000": 0};
+let idToColor = {"0": "#000000"};
+let cityData = [];
+let isFrozen = false;
 d3.json("2020cities15k_trimmed.json", (err, dat) => {
 //d3.json("2020cities15k.json", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
@@ -21,7 +22,7 @@ let projection = d3.geo.mercator()
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
     .scale(projection.scale() * 2 * Math.PI)
-    .scaleExtent([1885, 1 << 27])
+    .scaleExtent([1885 * globScl, 1 << 27])
     .translate(projection([10, 10]).map(x => -x))
     .on("zoom", zoomed);
 let container = d3.select("#container")
@@ -47,6 +48,7 @@ let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
 
 function createMap () {
+  if (isFrozen) return;
   let rad = Math.pow(zoom.scale(), 0.4) / 20;
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.lo, d.la]);
@@ -57,6 +59,7 @@ function createMap () {
   drawCanvas();
 }
 function drawCanvas () {
+  if (isFrozen) return;
   quadtree = new QuadTree(qtBound, 1);
   cityData.forEach(d => {
     let pt = new Point(d.x, d.y, d);
@@ -79,14 +82,17 @@ function trimPoints (elements) {
   reDraw ();
 }*/
 function reDraw () {
+  if (isFrozen) return;
   // Clear cities
   citiesContext.clearRect(0, 0, width, height);
   // Clear the output
+  if (document.getElementById("mcControls") && document.getElementById("mcControls").style )document.getElementById("mcControls").style.visibility = "hidden";
   outputContext.clearRect(0, 0, width, height);
   // Plot cities again
   drawCanvas();
 }
 function zoomed () {
+  if (isFrozen) return;
   // Update projection
   projection
     .scale(zoom.scale() / 2 / Math.PI)
@@ -229,6 +235,7 @@ function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
 }
 function mapMCs (scl=16) {
+  if (isFrozen) return;
   reDraw(); // Just to be sure that things are ready
   let xCount = Math.floor(width / scl);
   let yCount = Math.floor(height / scl);
@@ -237,6 +244,7 @@ function mapMCs (scl=16) {
       shadeMap(i * scl, j * scl, scl);
     }
   }
+  document.getElementById("mcControls").style.visibility = "visible";
 }
 // Note there are 1.6 million pixels, many of which will contain nothing
 // so the code should be written with this in mind rather than going at it 1.6 million times!
@@ -337,4 +345,7 @@ function saveInfo () {
 }
 function setOpacity (sliderValue) {
   document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
+}
+function toggleFrozen () {
+  isFrozen = document.getElementById("frozenToggle").checked;
 }

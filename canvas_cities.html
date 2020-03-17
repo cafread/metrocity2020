@@ -19,9 +19,12 @@
     </div>
     <script type="text/javascript" src="canvas_cities.js"></script>
     <button onclick="mapMCs()">Map MCs</button>
-    <button onclick="saveResult()">Export MC png</button>
-    <button onclick="saveInfo()">Export MC info</button>
-    Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input>
+    <div id="mcControls" style="visibility: hidden;">
+      <button onclick="saveResult()">Export MC png</button>
+      <button onclick="saveInfo()">Export MC info</button>
+      Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input>
+      Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label>
+    </div>
     <img id="outputContainer"></img>
   </body>
 </html>
