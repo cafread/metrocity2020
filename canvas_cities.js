@@ -312,7 +312,29 @@ function strColor (s) {
 function saveResult () {
   let outCanvas = document.getElementById("outputCanvas");
   let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-  // TODO save projection of [0, 0], [width, 0], [0, height], [width, height]
-  // TODO save idToColor
   window.location.href=outImage;
+}
+function saveInfo () {
+  // Save projection of [0, 0], [width, 0], [0, height], [width, height]
+  // Save idToColor
+  let proj = {
+    scale: zoom.scale(),
+    nw: projection.invert([0, 0]),
+    ne: projection.invert([width, 0]),
+    sw: projection.invert([0, height]),
+    se: projection.invert([width, height])
+  }
+  const encode = (s) => new Uint8Array(s.split("").map(d => d.charCodeAt()));
+  let data = encode(JSON.stringify({proj: proj, idToColor: idToColor}, null, 2));
+  let blob = new Blob([data], {type: 'application/octet-stream'});
+  url = URL.createObjectURL(blob);
+  let link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "metroCityInfo.json");
+  let event = document.createEvent("MouseEvents");
+  event.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+  link.dispatchEvent(event);
+}
+function setOpacity (sliderValue) {
+  document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
 }
