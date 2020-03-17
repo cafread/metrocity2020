@@ -13,7 +13,7 @@ d3.json("2020cities15k_trimmed.json", (err, dat) => {
   if (err) throw err;
   cityData = dat;
   dat.forEach(d => colorGen(d.i, d.n));
-  createMap(dat);
+  createMap();
 });
 let tile = d3.geo.tile().size([width, height]);
 let projection = d3.geo.mercator()
@@ -46,7 +46,7 @@ let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
 
-function createMap (dataset) {
+function createMap () {
   let rad = Math.pow(zoom.scale(), 0.4) / 20;
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.lo, d.la]);
