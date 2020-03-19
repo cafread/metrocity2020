@@ -1,8 +1,8 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
 const globScl = 1;
-const width = 1776 * globScl; // 16 x 111
-const height = 912 * globScl; // 16 x 57
+const width  = 1536 * globScl; // 256 * 6 and tiles are 256x256 pixels
+const height = 1024 * globScl; // 256 * 4
 const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 let colorToId = {"#000000": 0};
 let idToColor = {"0": "#000000"};
@@ -18,12 +18,14 @@ d3.json("2020cities15k_trimmed.json", (err, dat) => {
 });
 let tile = d3.geo.tile().size([width, height]);
 let projection = d3.geo.mercator()
-    .scale(globScl * 300)
+    .scale(32768)
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
-    .scale(projection.scale() * 2 * Math.PI)
-    .scaleExtent([1885 * globScl, 1 << 27])
-    .translate(projection([10, 10]).map(x => -x))
+    //.scale(projection.scale() * 2 * Math.PI)
+    .scale(32768) // For pixel perfect tiles, scale is acceptable
+    //.scaleExtent([1885 * globScl, 1 << 27])
+    .scaleExtent([32768, 32768])
+    //.translate(projection([0, 0]).map(x => -x)) // Center map at chosen location
     .on("zoom", zoomed);
 let container = d3.select("#container")
     .style("width", width + "px")
@@ -43,7 +45,7 @@ let penColor = "#FFFFFF";
 let citiesContext = chart.node().getContext("2d");
 let outputContext = output.node().getContext("2d");
 let mapLayer = d3.select(".mapLayer");
-let info = base.append("div").attr("id", "info");
+let info = document.getElementById("info");
 let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
@@ -95,6 +97,7 @@ function reDraw () {
 function zoomed () {
   if (isFrozen) return;
   // Update projection
+  // translateExtent([[-27, 21], [27, 0]]) // Testing
   projection
     .scale(zoom.scale() / 2 / Math.PI)
     .translate(zoom.translate());
@@ -105,7 +108,7 @@ function zoomed () {
     d.r = rad;
     return d;
   });
-  reDraw(); // Maybe call this with a boolean for hasScaled ?
+  reDraw();
   // Map tiles
   let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
   let image = mapLayer
@@ -212,7 +215,7 @@ function mousemoved () {
   }
   let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
-  info.text(metroCity + thisPosition + thisLatLong);
+  info.textContent = metroCity + thisPosition + thisLatLong;
 }
 function formatLocation (p, k) {
   let format = d3.format("." + Math.floor(Math.log(k) / 2 - 2) + "f");
@@ -321,7 +324,8 @@ function strColor (s) {
 function saveResult () {
   let outCanvas = document.getElementById("outputCanvas");
   let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-  window.location.href=outImage;
+  localStorage.setItem("test", outImage);
+  //window.location.href=outImage;
 }
 function saveInfo () {
   // Save projection of [0, 0], [width, 0], [0, height], [width, height]

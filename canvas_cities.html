@@ -16,10 +16,11 @@
         <canvas id="citiesCanvas" class="mapLayer"></canvas>
         <canvas id="outputCanvas" class="outputLayer"></canvas>
       </div>
+      <div id="info"></div>
       <div class="credit"><p>Data &copy; <a href="https://www.geonames.org/">GeoNames</a> Tiles &copy; <a href="https://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
     <script type="text/javascript" src="canvas_cities.js"></script>
-    <button onclick="mapMCs()">Map MCs</button>
+    <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
     <div id="mcControls" style="visibility: hidden;">
       <button onclick="saveResult()">Export MC png</button>
       <button onclick="saveInfo()">Export MC info</button>

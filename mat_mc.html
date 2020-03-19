@@ -1,27 +1,36 @@
 <!DOCTYPE html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="https://d3js.org/d3.v3.min.js"></script>
-    <script src="https://d3js.org/d3.geo.tile.v0.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.geo.tile.v0.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mootools/1.4.5/mootools-core-full-nocompat.min.js"></script>
     <script type="text/javascript" src="quadtree.js"></script>
-    <link href="canvas_cities.css" rel="stylesheet" type="text/css">
+    <link type="text/css"href="canvas_cities.css" rel="stylesheet" />
     <link href="favicon.ico" rel="icon" type="image/x-icon" />
-    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,600,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,600,700' rel='stylesheet' type='text/css' />
   </head>
   <body>
     <div id="container">
       <div class="mapLayer"></div>
       <div id="map">
-        <canvas id="citiesCanvas"></canvas>
-        <canvas id="outputCanvas"></canvas>
+        <canvas id="citiesCanvas" class="mapLayer"></canvas>
+        <canvas id="outputCanvas" class="outputLayer"></canvas>
       </div>
+      <div id="info"></div>
       <div class="credit"><p>Data &copy; <a href="https://www.geonames.org/">GeoNames</a> Tiles &copy; <a href="https://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
     <script type="text/javascript" src="mat_mc.js"></script>
-    <button onclick="mapMCs()">Map MCs</button>
-    <button onclick="saveResult()">Export MC png</button>
-    <button onclick="saveInfo()">Export MC info</button>
-    Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input>
+    <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
+    <div id="mcControls" style="visibility: hidden;">
+      <button onclick="saveResult()">Export MC png</button>
+      <button onclick="saveInfo()">Export MC info</button>
+      Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input>
+      Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label>
+      <div id=brushInfo>
+        <div id="colorCont">Color: <div id="colorPot" style="display: inline-block; color: white"></div></div>
+        <div id="brWidCont">Brush Width: <input class="slider" type="range" min="1" max="100" value="15" id="brushSize"></input></div>
+      </div>
+    </div>
     <img id="outputContainer"></img>
   </body>
 </html>

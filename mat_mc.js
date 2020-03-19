@@ -1,8 +1,8 @@
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
-let globScl = 1;
-let width = 1776 * globScl; // 16 x 111
-let height = 912 * globScl; // 16 x 57
+const globScl = 1;
+const width  = 1536 * globScl; // 256 * 6 and tiles are 256x256 pixels
+const height = 1024 * globScl; // 256 * 4
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 var colorToId = {"#000000": 0};
 var idToColor = {"0": "#000000"};
@@ -40,7 +40,7 @@ let output = d3.select('#outputCanvas')
 let citiesContext = chart.node().getContext('2d');
 let outputContext = output.node().getContext('2d');
 let mapLayer = d3.select('.mapLayer');
-let info = base.append("div").attr("class", "info");
+let info = document.getElementById("info");
 let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 zoomed();
@@ -130,7 +130,7 @@ function search (x, y) {
       d: thisDist
     };
   });
-  return cands.filter(d => d.d <= 100).sort((a, b) => b.s - a.s)[0];
+  return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
 }
 // Basic conversions
 const deg2rad = (degs) => Math.PI * degs / 180.0;
@@ -204,7 +204,7 @@ function mousemoved () {
   }
   let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
-  info.text(metroCity + thisPosition + thisLatLong);
+  info.textContent = metroCity + thisPosition + thisLatLong;
 }
 function formatLocation (p, k) {
   let format = d3.format("." + Math.floor(Math.log(k) / 2 - 2) + "f");
