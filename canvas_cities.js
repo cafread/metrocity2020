@@ -1,3 +1,15 @@
+
+
+
+const nullTile = "data:image/octet-stream;base64,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";
+const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
+let tileObj = {}
+
+
+
+
+
+
 // Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
 // Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
 const globScl = 1;
@@ -21,11 +33,8 @@ let projection = d3.geo.mercator()
     .scale(32768)
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
-    //.scale(projection.scale() * 2 * Math.PI)
     .scale(32768) // For pixel perfect tiles, scale is acceptable
-    //.scaleExtent([1885 * globScl, 1 << 27])
     .scaleExtent([32768, 32768])
-    //.translate(projection([0, 0]).map(x => -x)) // Center map at chosen location
     .on("zoom", zoomed);
 let container = d3.select("#container")
     .style("width", width + "px")
@@ -48,7 +57,7 @@ let mapLayer = d3.select(".mapLayer");
 let info = document.getElementById("info");
 let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
-zoomed();
+moveToTile();
 
 function createMap () {
   if (isFrozen) return;
@@ -141,7 +150,7 @@ function search (x, y) {
       d: thisDist
     };
   });
-  return cands.filter(d => d.d <= 100).sort((a, b) => b.s - a.s)[0];
+  return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
 }
 // Basic conversions
 const deg2rad = (degs) => Math.PI * degs / 180.0;
@@ -324,8 +333,89 @@ function strColor (s) {
 function saveResult () {
   let outCanvas = document.getElementById("outputCanvas");
   let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-  localStorage.setItem("test", outImage);
-  //window.location.href=outImage;
+  window.location.href=outImage;
+}
+function generateMaster () {
+  localStorage.clear();
+  let tileX = 0;  // Range is 00 to 127, window is 6 tiles wide (1536px)
+  let tileY = 17; // Range is 17 to 087, window is 4 tiles tall (1024px)
+  moveToTile(tileX, tileY);
+  while (tileY < 88) {
+    while (tileX < 128) {
+      mapMCs();
+      persistResult();
+      moveToTile(tileX, tileY);
+      tileX += 6;
+    }
+    tileX = 0;
+    if (tileY === 123) {
+      tileY = 128;
+    } else {
+      tileY = Math.min(123, tileY + 4);
+    }
+    moveToTile(tileX, tileY);
+  }
+}
+function moveToTile (x=60, y=40) {
+  zoom.translate([256 * (64 - x), 256 * (64 - y)]);
+  zoomed();
+}
+function persistResult () {
+  let tileCoords = d3.select("#container").selectAll(".tile")[0].map(d => d3.select(d).attr("src").substr(44,15).replace(".png", "").split("/"));
+  let minTileX = +d3.min(tileCoords, d => d[0]);
+  let minTileY = +d3.min(tileCoords, d => d[1]);
+  let outCanvas = document.getElementById("outputCanvas");
+  let hiddenCanvas = document.getElementById("hiddenCanvas");
+  hiddenCanvas.width = 256;
+  hiddenCanvas.height = 256;
+  let hiddenContext = hiddenCanvas.getContext("2d");
+  let row = 0;
+  let col = 0;
+  let outTile;
+  let _key = "";
+  while (row < 4) {
+    while (col < 6) {
+      if (minTileY + col < 128) {
+        hiddenContext.clearRect(0, 0, 256, 256);
+        hiddenContext.drawImage(outCanvas, row * 256, col * 256, 256, 256, 0, 0, 256, 256);
+        outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        _key = lpad(minTileX + row, 3) + "_" + lpad(minTileY + col, 3);
+        let compressedTile = LZString.compress(outTile.replace(tileCode, ""));
+        // Base64String.compress(outTile.replace(tileCode, ""));
+        if (outTile !== nullTile) tileObj[_key] = localStorage.setItem(_key, compressedTile);
+        col++;
+      } else {
+        col = 10; // End if we have tried to get something beyond maximum x tile
+      }
+    }
+    col = 0;
+    row++;
+  }
+}
+function zipAndDownload() {
+  let zip = new JSZip();
+  let tls = zip.folder("tiles");
+  let lsKeys = Object.keys(localStorage);
+  lsKeys.forEach(k => {
+    let b64Str = tileCode.substring(31, 78) + LZString.decompress(localStorage.getItem(k));
+    // let b64Str = tileCode + Base64String.decompress(localStorage.getItem(k));
+    tls.file(k + ".png", b64Str, {base64: true});
+  });
+  console.log(zip);
+  zip.generateAsync({type:"blob"}).then(function(content) {saveAs(content, "tiles.zip");});
+}
+function getTileData (x, y) {
+  let _key = lpad(x, 3) + "_" + lpad(y, 3);
+  let compressed = localStorage.getItem(_key);
+  if (compressed === null) return nullTile;
+  let uncompressed = LZString.decompress(compressed);
+  // Base64String.decompress(compressed);
+  return tileCode + uncompressed;
+}
+function lpad (str, len, padChar="0") {
+  str = str + "";
+  let retLen = Math.max(str.length, len);
+  return padChar.repeat(retLen - str.length) + str;
 }
 function saveInfo () {
   // Save projection of [0, 0], [width, 0], [0, height], [width, height]
