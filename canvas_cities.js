@@ -114,6 +114,8 @@ function zoomed () {
   image.enter().append("img")
     .attr("class", "tile")
     .attr("src",   d => "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
+    //.attr("src",   d => xyToMasterTile(d[0], + d[1]))
+    //.attr("src",   d => "tiles/" + lpad(d[0], 3) + "_" + lpad(d[1], 3) + ".png")
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
 }
@@ -137,6 +139,11 @@ function search (x, y) {
     };
   });
   return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
+}
+function xyToMasterTile (x, y) {
+  let storedTile = localStorage.getItem([x, y].map(d => lpad(Number(d), 3)).join("_"));
+  if (storedTile === null) return nullTile;
+  return tileCode + LZString.decompress(storedTile);
 }
 // Basic conversions
 const deg2rad = (degs) => Math.PI * degs / 180.0;
@@ -316,34 +323,37 @@ function saveResult () {
   window.location.href=outImage;
 }
 function generateMaster () {
+  if (!confirm("Are you sure? This will take a little while and will clear local storage")) return;
   localStorage.clear();
   let tileX = 0;  // Range is 00 to 127, window is 6 tiles wide (1536px)
   let tileY = 17; // Range is 17 to 087, window is 4 tiles tall (1024px)
   moveToTile(tileX, tileY);
   while (tileY < 88) {
+    console.log("executing for y = " + tileY + " of 87");
     while (tileX < 128) {
       mapMCs();
       persistResult();
       moveToTile(tileX, tileY);
-      tileX += 6;
+      if (tileX === 124) {
+        tileX = 128;
+      } else {
+        tileX = Math.min(124, tileX + 6);
+      }
     }
     tileX = 0;
-    if (tileY === 123) {
-      tileY = 128;
-    } else {
-      tileY = Math.min(123, tileY + 4);
-    }
+    tileY = tileY + 4;
     moveToTile(tileX, tileY);
   }
+  moveToTile(); // Reset back to the UK
 }
 function moveToTile (x=60, y=40) {
   zoom.translate([256 * (64 - x), 256 * (64 - y)]);
   zoomed();
 }
 function persistResult () {
-  let tileCoords = d3.select("#container").selectAll(".tile")[0].map(d => d3.select(d).attr("src").substr(44,15).replace(".png", "").split("/"));
-  let minTileX = +d3.min(tileCoords, d => d[0]);
-  let minTileY = +d3.min(tileCoords, d => d[1]);
+  let tileCoords = d3.select("#container").selectAll(".tile")[0].map(d => d3.select(d).attr("src").substr(44, 15).replace(".png", "").split("/"));
+  let minTileX = d3.min(tileCoords, d => +d[0]);
+  let minTileY = d3.min(tileCoords, d => +d[1]);
   let outCanvas = document.getElementById("outputCanvas");
   let hiddenCanvas = document.getElementById("hiddenCanvas");
   hiddenCanvas.width = 256;
@@ -353,14 +363,14 @@ function persistResult () {
   let col = 0;
   let outTile;
   let _key = "";
-  while (row < 4) {
-    while (col < 6) {
-      if (minTileY + col < 128) {
+  while (row < 4) { // Row is our Y
+    while (col < 6) { // Col is our X
+      if (minTileX + col < 128) {
         hiddenContext.clearRect(0, 0, 256, 256);
-        hiddenContext.drawImage(outCanvas, row * 256, col * 256, 256, 256, 0, 0, 256, 256);
+        hiddenContext.drawImage(outCanvas, col * 256, row * 256, 256, 256, 0, 0, 256, 256);
         outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-        _key = lpad(minTileX + row, 3) + "_" + lpad(minTileY + col, 3);
-        let compressedTile = Base64String.compress(outTile.replace(tileCode, ""));
+        _key = lpad(minTileX + col, 3) + "_" + lpad(minTileY + row, 3);
+        let compressedTile = LZString.compress(outTile.replace(tileCode, ""));
         if (outTile !== nullTile) localStorage.setItem(_key, compressedTile);
         col++;
       } else {
@@ -376,17 +386,16 @@ function zipAndDownload() {
   let tls = zip.folder("tiles");
   let lsKeys = Object.keys(localStorage);
   lsKeys.forEach(k => {
-    let b64Str = tileCode + Base64String.decompress(localStorage.getItem(k));
+    let b64Str = tileCode.substring(31, 78) + LZString.decompress(localStorage.getItem(k));
     tls.file(k + ".png", b64Str, {base64: true});
   });
-  console.log(zip);
   zip.generateAsync({type:"blob"}).then(function(content) {saveAs(content, "tiles.zip");});
 }
 function getTileData (x, y) {
   let _key = lpad(x, 3) + "_" + lpad(y, 3);
   let compressed = localStorage.getItem(_key);
   if (compressed === null) return nullTile;
-  let uncompressed = Base64String.decompress(compressed);
+  let uncompressed = LZString.decompress(compressed);
   return tileCode + uncompressed;
 }
 function lpad (str, len, padChar="0") {
@@ -423,6 +432,7 @@ function toggleFrozen () {
   if (!isFrozen) {
     document.getElementById("outputCanvas").style.cursor = "pointer";
     document.getElementById("mapMCs").style.visibility = "visible";
+    document.getElementById("brushInfo").style.visibility = "hidden";
     d3.select("#outputCanvas").on("click", null);
     allowDrawing = false;
     busyDrawing = false
@@ -431,6 +441,8 @@ function toggleFrozen () {
     penColor = "rgba(255,255,255,1)";
     document.getElementById("colorPot").style.background = penColor;
     document.getElementById("mapMCs").style.visibility = "hidden";
+    document.getElementById("brushInfo").style.visibility = "visible";
+    allowDrawing = false;
   }
 }
 function enableSample () {

@@ -6,8 +6,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mootools/1.4.5/mootools-core-full-nocompat.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <script type="text/javascript" src="quadtree.js"></script>
-    <script type="text/javascript" src="b64Compress.js"></script>
     <script type="text/javascript" src="colorIdLookup.js"></script>
     <link type="text/css"href="canvas_cities.css" rel="stylesheet" />
     <link href="favicon.ico" rel="icon" type="image/x-icon" />
@@ -27,15 +27,17 @@
     <script type="text/javascript" src="canvas_cities.js"></script>
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
     <div id="mcControls" style="visibility: hidden;">
-      <button onclick="saveResult()">Export MC png</button>
-      <button onclick="saveInfo()">Export MC info</button>
-      Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input>
-      Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label>
-      <div id=brushInfo>
-        <div id="colorCont">Color: <div id="colorPot" style="display: inline-block; color: white"></div> City: <span id="paintCity"></span></div>
+      <button onclick="saveResult()">Export MC png</button><br>
+      <button onclick="saveInfo()">Export MC info</button><br>
+      Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input><br>
+      Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label><br>
+      <div id="brushInfo" style="visibility: hidden;">
+        <div id="colorCont">
+          Color: <div id="colorPot" style="display: inline-block; color: white"></div><br>
+          City: <span id="paintCity"></span>
+        </div>
         <div id="brWidCont">Brush Width: <input class="slider" type="range" min="1" max="100" value="15" id="brushSize"></input></div>
       </div>
     </div>
-    <img id="outputContainer"></img>
   </body>
 </html>
