@@ -1,23 +1,9 @@
-
-
-
 const nullTile = "data:image/octet-stream;base64,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";
 const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
-let tileObj = {}
-
-
-
-
-
-
-// Original http://bl.ocks.org/jhubley/25f32b1f123dca4012f1
-// Using a custom quadtree for locating nearby cities to consider as the d3 implementation isn't great
 const globScl = 1;
 const width  = 1536 * globScl; // 256 * 6 and tiles are 256x256 pixels
 const height = 1024 * globScl; // 256 * 4
 const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
-let colorToId = {"#000000": 0};
-let idToColor = {"0": "#000000"};
 let cityData = [];
 let isFrozen = false;
 d3.json("2020cities15k_trimmed.json", (err, dat) => {
@@ -25,7 +11,7 @@ d3.json("2020cities15k_trimmed.json", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
   cityData = dat;
-  dat.forEach(d => colorGen(d.i, d.n));
+  dat.forEach(d => colorGen(d.i));
   createMap();
 });
 let tile = d3.geo.tile().size([width, height]);
@@ -50,7 +36,7 @@ let output = d3.select("#outputCanvas")
     .attr("class", "outputLayer")
     .attr("width", width)
     .attr("height", height);
-let penColor = "#FFFFFF";
+let penColor = "rgba(255,255,255,1)";
 let citiesContext = chart.node().getContext("2d");
 let outputContext = output.node().getContext("2d");
 let mapLayer = d3.select(".mapLayer");
@@ -247,7 +233,7 @@ function greatCircleKm (lat1, lon1, lat2, lon2) {
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
 }
-function mapMCs (scl=16) {
+function mapMCs (scl=8) {
   if (isFrozen) return;
   reDraw(); // Just to be sure that things are ready
   let xCount = Math.floor(width / scl);
@@ -263,7 +249,7 @@ function mapMCs (scl=16) {
 // so the code should be written with this in mind rather than going at it 1.6 million times!
 function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality balance is off
   // width = height as square
-  // This is intended for web workers - many 16x16 threads can be triggered
+  // This is intended for web workers - many threads can be triggered
   // Note that x is the left, y, the top, not the centroid as in a Rectangle
   // 0, 0, 16 are defaults for the initial call
   // This will be called recursively for dense areas
@@ -309,26 +295,20 @@ function mcEqual (mc4) { // Test if four corner MCs have the same id
   let se = mc4.se ? mc4.se.i : 0;
   return nw === se;
 }
-function colorGen (id, name) {
-  // Annoyingly, this might need to be rgba rather than hexS
-  // Takes the details for metrocity and inserts into colorKey a unique hexadecimal colour which can be mapped back to the id
+function colorGen (id) {
+  // Generates a unique color which can be mapped back to the id
   if (idToColor.hasOwnProperty(id)) return; // Dupe check
-  let colorCode = strColor(name + id.toString());
+  console.log("unmapped id:" + id);
+  let colorCode = randomRGBA();
   while (colorToId.hasOwnProperty(colorCode)) { // Dupe check
-    colorCode = strColor(name + id.toString() + Math.random(1000).toString());
+    colorCode = randomRGBA();
   }
   colorToId[colorCode] = id;
   idToColor[id] = colorCode;
 }
-function strColor (s) {
-  let hash = 0, i, chr;
-  if (s.length === 0) return "#000000";
-  for (i = 0; i < s.length; i++) {
-    chr   = s.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return "#" + (Math.abs(hash).toString(16) + "ffffff").substring(0, 6);
+function randomRGBA () {
+  let [r, g, b] = [Math.random()*255 | 0, Math.random()*255 | 0, Math.random()*255 | 0];
+  return "rgba(" + r + "," + g + "," + b + ",1)";
 }
 function saveResult () {
   let outCanvas = document.getElementById("outputCanvas");
@@ -380,9 +360,8 @@ function persistResult () {
         hiddenContext.drawImage(outCanvas, row * 256, col * 256, 256, 256, 0, 0, 256, 256);
         outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
         _key = lpad(minTileX + row, 3) + "_" + lpad(minTileY + col, 3);
-        let compressedTile = LZString.compress(outTile.replace(tileCode, ""));
-        // Base64String.compress(outTile.replace(tileCode, ""));
-        if (outTile !== nullTile) tileObj[_key] = localStorage.setItem(_key, compressedTile);
+        let compressedTile = Base64String.compress(outTile.replace(tileCode, ""));
+        if (outTile !== nullTile) localStorage.setItem(_key, compressedTile);
         col++;
       } else {
         col = 10; // End if we have tried to get something beyond maximum x tile
@@ -397,8 +376,7 @@ function zipAndDownload() {
   let tls = zip.folder("tiles");
   let lsKeys = Object.keys(localStorage);
   lsKeys.forEach(k => {
-    let b64Str = tileCode.substring(31, 78) + LZString.decompress(localStorage.getItem(k));
-    // let b64Str = tileCode + Base64String.decompress(localStorage.getItem(k));
+    let b64Str = tileCode + Base64String.decompress(localStorage.getItem(k));
     tls.file(k + ".png", b64Str, {base64: true});
   });
   console.log(zip);
@@ -408,8 +386,7 @@ function getTileData (x, y) {
   let _key = lpad(x, 3) + "_" + lpad(y, 3);
   let compressed = localStorage.getItem(_key);
   if (compressed === null) return nullTile;
-  let uncompressed = LZString.decompress(compressed);
-  // Base64String.decompress(compressed);
+  let uncompressed = Base64String.decompress(compressed);
   return tileCode + uncompressed;
 }
 function lpad (str, len, padChar="0") {
@@ -445,13 +422,15 @@ function toggleFrozen () {
   isFrozen = document.getElementById("frozenToggle").checked;
   if (!isFrozen) {
     document.getElementById("outputCanvas").style.cursor = "pointer";
+    document.getElementById("mapMCs").style.visibility = "visible";
     d3.select("#outputCanvas").on("click", null);
     allowDrawing = false;
     busyDrawing = false
   } else {
     enableSample ();
-    penColor = "#FFFFFF";
+    penColor = "rgba(255,255,255,1)";
     document.getElementById("colorPot").style.background = penColor;
+    document.getElementById("mapMCs").style.visibility = "hidden";
   }
 }
 function enableSample () {
@@ -474,18 +453,15 @@ function enablePaint () {
 function sampleOutput () {
   let [x, y] = d3.mouse(this);
   let [r, g, b, a] = outputContext.getImageData(x, y, 1, 1).data;
-  let hexCode = "#" + toHex(r) + toHex(g) + toHex(b);
-  let rgba = "rgba(" + r + "," + g + "," + b + "," + a + ")"
-  penColor = hexCode;
+  let rgba = "rgba(" + r + "," + g + "," + b + ",1)"; // Ignore alpha channel
+  penColor = rgba;
   document.getElementById("colorPot").style.background = penColor;
-  // TODO: add metro city name that we are painting here
+  let mcid = colorToId[penColor];
+  console.log(penColor, mcid);
+  let mc = mcid ? cityData.find(d => d.i === mcid).n : "None";
+  console.log(penColor, mcid, mc);
+  document.getElementById("paintCity").textContent = mc;
   enablePaint ();
-}
-function toHex (n) {
-  n = parseInt(n, 10);
-  if (isNaN(n)) return "00";
-  n = Math.max(0, Math.min(n, 255));
-  return "0123456789ABCDEF".charAt((n - n % 16) / 16) + "0123456789ABCDEF".charAt(n % 16);
 }
 
 // Requires Mootools 1.4.5
@@ -513,7 +489,7 @@ myArt.onmousemove = (event) => {
 }
 myArt.onmouseleave = () => busyDrawing = false;
 function addPaint () {
-  if (penColor === "#000000" || penColor === "#FFFFFF") { // Erasing
+  if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
     outputContext.globalCompositeOperation = "destination-out";
     outputContext.strokeStyle = "rgba(255,255,255,1)";
   } else { // Drawing
