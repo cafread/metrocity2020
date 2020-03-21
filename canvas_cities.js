@@ -282,7 +282,7 @@ function persistResult (withNotice=false) {
     col = 0;
     row++;
   }
-  document.getElementById("storeEdits").style.background = "green";
+  document.getElementById("storeEdits").style.background = "lightgreen";
   setTimeout(function(){document.getElementById("storeEdits").style.background = "";}, 600);
 }
 function zipAndDownload() {
