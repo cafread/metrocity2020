@@ -24,8 +24,11 @@
       <div id="info"></div>
       <div class="credit"><p>Data &copy; <a href="https://www.geonames.org/">GeoNames</a> Tiles &copy; <a href="https://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
+    <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="canvas_cities.js"></script>
+    <script type="text/javascript" src="output_drawing.js"></script>
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
+    <button id="dispWIP" onclick="dispWIP()">Display WIP</button>
     <div id="mcControls" style="visibility: hidden;">
       <button onclick="saveResult()">Export MC png</button><br>
       <button onclick="saveInfo()">Export MC info</button><br>
@@ -37,7 +40,10 @@
           City: <span id="paintCity"></span>
         </div>
         <div id="brWidCont">Brush Width: <input class="slider" type="range" min="1" max="100" value="15" id="brushSize"></input></div>
+        <button id="storeEdits" onclick="persistResult()">Store Edits</button>
       </div>
     </div>
+    <button id="downloadZip" onclick="zipAndDownload()">Download zip</button>
+    <button id="generateMaster" onclick="generateMaster()">Generate Master</button>
   </body>
 </html>

@@ -37,7 +37,8 @@ html, body {
   position: absolute;
   z-index: -10;
 }
-.tile {
+.tile,
+.masterTile {
   pointer-events: none;
   position: absolute;
   width: 256px;
@@ -78,6 +79,21 @@ button {
 #mapMCs {
   position: fixed;
   top: 10px;
+  left: 1560px;
+}
+#dispWIP {
+  position: fixed;
+  top: 10px;
+  left: 1720px;
+}
+#downloadZip {
+  position: fixed;
+  top: 380px;
+  left: 1560px;
+}
+#generateMaster {
+  position: fixed;
+  top: 450px;
   left: 1560px;
 }
 #mcControls {

@@ -16,11 +16,11 @@ d3.json("2020cities15k_trimmed.json", (err, dat) => {
 });
 let tile = d3.geo.tile().size([width, height]);
 let projection = d3.geo.mercator()
-    .scale(32768)
+    .scale(1 << 15)
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
-    .scale(32768) // For pixel perfect tiles, scale is acceptable
-    .scaleExtent([32768, 32768])
+    .scale(1 << 15) // For pixel perfect tiles, scale is acceptable
+    .scaleExtent([1 << 15, 1 << 15])
     .on("zoom", zoomed);
 let container = d3.select("#container")
     .style("width", width + "px")
@@ -113,13 +113,24 @@ function zoomed () {
   image.exit().remove();
   image.enter().append("img")
     .attr("class", "tile")
-    .attr("src",   d => "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
-    //.attr("src",   d => xyToMasterTile(d[0], + d[1]))
-    //.attr("src",   d => "tiles/" + lpad(d[0], 3) + "_" + lpad(d[1], 3) + ".png")
+    .attr("src", d => "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
+    .attr("onerror", "this.src='tiles/none.png'")
+    .style("left", d => (d[0] << 8) + "px")
+    .style("top",  d => (d[1] << 8) + "px");
+  d3.selectAll(".masterTile").style("opacity", 0.15);
+  let master = mapLayer
+    .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
+    .selectAll(".masterTile")
+      .data(tiles, d => d);
+      master.exit().remove();
+  master.enter().append("img")
+    .attr("class", "masterTile")
+    .attr("src", d => "tiles/" + lpad(d[0], 3) + "_" + lpad(d[1], 3) + ".png")
+    .attr("onerror", "this.src='tiles/none.png'")
+    .style("opacity", 0.15)
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
 }
-// Find the nodes within the specified rectangle.
 function search (x, y) {
   // Given a projected x, y, return the most influential metro city
   let range = new Rectangle(...projBBox(x, y, true));
@@ -140,102 +151,10 @@ function search (x, y) {
   });
   return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
 }
-function xyToMasterTile (x, y) {
-  let storedTile = localStorage.getItem([x, y].map(d => lpad(Number(d), 3)).join("_"));
-  if (storedTile === null) return nullTile;
-  return tileCode + LZString.decompress(storedTile);
-}
-// Basic conversions
-const deg2rad = (degs) => Math.PI * degs / 180.0;
-const rad2deg = (rads) => 180.0 * rads / Math.PI;
-function projBBox (cx, cy, simple) {
-  // Generate a bounding box based on a distance in all directions
-  const searchDist = 100;
-  // x, y are the centre of the rectangle we wish to create
-  let [lo, la] = projection.invert([cx, cy]); // lo, la in degrees
-  if (simple === true) {
-    // https://en.wikipedia.org/wiki/Latitude
-    // Longitude: 1 deg = 111.320 * cos(latitude in radians) km
-    let longAdj = searchDist / (111.320 * Math.cos(deg2rad(la)));
-    let x = projection([lo - longAdj, la])[0];
-    // Latitude: 1 deg = 110.574 km at the equator
-    let latAdj = searchDist / [110.574, 110.649, 110.852, 111.132, 111.412, 111.618, 111.694][Math.round(Math.abs(la) / 15)];
-    let y = projection([lo, la + latAdj])[1];
-    let w = projection([lo + longAdj, la])[0] - x;
-    let h = projection([lo, la - latAdj])[1] - y;
-    return [x + w / 2, y + h / 2, w, h];
-  }
-  // Complex method for verification
-  // Semi-axes of WGS-84 geoidal reference
-  const WGS84_a = 6378137.0;  // Major semiaxis in metres
-  const WGS84_b = 6356752.3;  // Minor semiaxis in metres
-  // Earth radius at a given latitude, according to the WGS-84 ellipsoid in metres
-  function WGS84EarthRadius (lat) {
-    // http://en.wikipedia.org/wiki/Earth_radius
-    let An = WGS84_a * WGS84_a * Math.cos(lat);
-    let Bn = WGS84_b * WGS84_b * Math.sin(lat);
-    let Ad = WGS84_a * Math.cos(lat);
-    let Bd = WGS84_b * Math.sin(lat);
-    return Math.sqrt((An*An + Bn*Bn) / (Ad*Ad + Bd*Bd));
-  }
-  // Bounding box surrounding the point at given coordinates,
-  // assuming local approximation of Earth surface as a sphere
-  // of radius given by WGS84
-  let lat = deg2rad(la);
-  let lon = deg2rad(lo);
-  let halfSide = searchDist * 1000;
-  // Radius of Earth at given latitude
-  let radius = WGS84EarthRadius(lat);
-  // Radius of the parallel at given latitude
-  let pradius = radius * Math.cos(lat);
-  let latMin = rad2deg(lat - halfSide / radius);
-  let latMax = rad2deg(lat + halfSide / radius); // latmax - latmin should be ~ 2 degrees
-  let lonMin = rad2deg(lon - halfSide / pradius);
-  let lonMax = rad2deg(lon + halfSide / pradius);
-  // Re-project
-  let x = projection([lonMin, la])[0];
-  let y = projection([lo, latMax])[1];
-  let h = projection([lo, latMin])[1] - y;
-  let w = projection([lonMax, la])[0] - x;
-  return [x + w / 2, y + h / 2, w, h];
-}
-function matrix3d (scale, translate) {
-  let k = scale / 256, r = scale % 1 ? Number : Math.round;
-  return "matrix3d(" + [k, 0, 0, 0, 0, k, 0, 0, 0, 0, k, 0, r(translate[0] * scale), r(translate[1] * scale), 0, 1 ] + ")";
-}
 function prefixMatch (p) {
   let i = -1, n = p.length, s = document.body.style;
   while (++i < n) if (p[i] + "Transform" in s) return "-" + p[i].toLowerCase() + "-";
   return "";
-}
-function mousemoved () {
-  let metroCity = search(...d3.mouse(this));
-  if (metroCity && metroCity.n) {
-    metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
-  } else {
-    metroCity = "None";
-  }
-  let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
-  let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
-  info.textContent = metroCity + thisPosition + thisLatLong;
-}
-function formatLocation (p, k) {
-  let format = d3.format("." + Math.floor(Math.log(k) / 2 - 2) + "f");
-  return (p[1] < 0 ? format(-p[1]) + " S" : format(p[1]) + " N") + " "
-       + (p[0] < 0 ? format(-p[0]) + " W" : format(p[0]) + " E");
-}
-function greatCircleKm (lat1, lon1, lat2, lon2) {
-  let R = 6371; // Radius of the earth in km
-  let dLat = deg2rad(lat2 - lat1);
-  let dLon = deg2rad(lon2 - lon1);
-  let a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2)
-    ;
-  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  let d = R * c; // Distance in km
-  return d;
 }
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
@@ -302,21 +221,6 @@ function mcEqual (mc4) { // Test if four corner MCs have the same id
   let se = mc4.se ? mc4.se.i : 0;
   return nw === se;
 }
-function colorGen (id) {
-  // Generates a unique color which can be mapped back to the id
-  if (idToColor.hasOwnProperty(id)) return; // Dupe check
-  console.log("unmapped id:" + id);
-  let colorCode = randomRGBA();
-  while (colorToId.hasOwnProperty(colorCode)) { // Dupe check
-    colorCode = randomRGBA();
-  }
-  colorToId[colorCode] = id;
-  idToColor[id] = colorCode;
-}
-function randomRGBA () {
-  let [r, g, b] = [Math.random()*255 | 0, Math.random()*255 | 0, Math.random()*255 | 0];
-  return "rgba(" + r + "," + g + "," + b + ",1)";
-}
 function saveResult () {
   let outCanvas = document.getElementById("outputCanvas");
   let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
@@ -351,9 +255,7 @@ function moveToTile (x=60, y=40) {
   zoomed();
 }
 function persistResult () {
-  let tileCoords = d3.select("#container").selectAll(".tile")[0].map(d => d3.select(d).attr("src").substr(44, 15).replace(".png", "").split("/"));
-  let minTileX = d3.min(tileCoords, d => +d[0]);
-  let minTileY = d3.min(tileCoords, d => +d[1]);
+  let [minTileX, minTileY] = topLeftTile ();
   let outCanvas = document.getElementById("outputCanvas");
   let hiddenCanvas = document.getElementById("hiddenCanvas");
   hiddenCanvas.width = 256;
@@ -398,11 +300,6 @@ function getTileData (x, y) {
   let uncompressed = LZString.decompress(compressed);
   return tileCode + uncompressed;
 }
-function lpad (str, len, padChar="0") {
-  str = str + "";
-  let retLen = Math.max(str.length, len);
-  return padChar.repeat(retLen - str.length) + str;
-}
 function saveInfo () {
   // Save projection of [0, 0], [width, 0], [0, height], [width, height]
   // Save idToColor
@@ -423,91 +320,4 @@ function saveInfo () {
   let event = document.createEvent("MouseEvents");
   event.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
   link.dispatchEvent(event);
-}
-function setOpacity (sliderValue) {
-  document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
-}
-function toggleFrozen () {
-  isFrozen = document.getElementById("frozenToggle").checked;
-  if (!isFrozen) {
-    document.getElementById("outputCanvas").style.cursor = "pointer";
-    document.getElementById("mapMCs").style.visibility = "visible";
-    document.getElementById("brushInfo").style.visibility = "hidden";
-    d3.select("#outputCanvas").on("click", null);
-    allowDrawing = false;
-    busyDrawing = false
-  } else {
-    enableSample ();
-    penColor = "rgba(255,255,255,1)";
-    document.getElementById("colorPot").style.background = penColor;
-    document.getElementById("mapMCs").style.visibility = "hidden";
-    document.getElementById("brushInfo").style.visibility = "visible";
-    allowDrawing = false;
-  }
-}
-function enableSample () {
-  // Switch from observation mode to color sampling mode
-  // Set cursor to pipette to make this obvious
-  document.getElementById("outputCanvas").style.cursor = "url(pip.png), pointer";
-  d3.select("#outputCanvas").on("click", sampleOutput);
-  busyDrawing = false;
-  allowDrawing = false;
-}
-function enablePaint () {
-  // Switch to painting mode
-  // Set cursor to brush to make this obvious
-  document.getElementById("outputCanvas").style.cursor = "url(brush.png), pointer";
-  d3.select("#outputCanvas").on("click", sampleOutput);
-  // Do painty stuff here
-  d3.select("#colorPot").on("click", enableSample);
-  addPaint();
-}
-function sampleOutput () {
-  let [x, y] = d3.mouse(this);
-  let [r, g, b, a] = outputContext.getImageData(x, y, 1, 1).data;
-  let rgba = "rgba(" + r + "," + g + "," + b + ",1)"; // Ignore alpha channel
-  penColor = rgba;
-  document.getElementById("colorPot").style.background = penColor;
-  let mcid = colorToId[penColor];
-  console.log(penColor, mcid);
-  let mc = mcid ? cityData.find(d => d.i === mcid).n : "None";
-  console.log(penColor, mcid, mc);
-  document.getElementById("paintCity").textContent = mc;
-  enablePaint ();
-}
-
-// Requires Mootools 1.4.5
-// TODO move this into a class
-let myArt = document.getElementById("outputCanvas");
-let busyDrawing = false;
-let allowDrawing = false;
-myArt.onselectstart = () => {};
-myArt.unselectable = "on";
-myArt.style.MozUserSelect = "none";
-myArt.onmousedown = (event) => {
-  busyDrawing = allowDrawing;
-  outputContext.strokeStyle = penColor;
-  outputContext.lineWidth = document.getElementById("brushSize").value;
-  outputContext.lineCap = "round";
-  outputContext.beginPath();
-  outputContext.moveTo(event.pageX - myArt.offsetLeft, event.pageY);
-}
-myArt.onmouseup = () => busyDrawing = false;
-myArt.onmousemove = (event) => {
-  if (busyDrawing) {
-    outputContext.lineTo(event.pageX - myArt.offsetLeft, event.pageY);
-    outputContext.stroke();
-  }
-}
-myArt.onmouseleave = () => busyDrawing = false;
-function addPaint () {
-  if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
-    outputContext.globalCompositeOperation = "destination-out";
-    outputContext.strokeStyle = "rgba(255,255,255,1)";
-  } else { // Drawing
-    outputContext.globalCompositeOperation = "source-over";
-    outputContext.strokeStyle = penColor;
-  }
-  // Now to do the painty bit itself
-  allowDrawing = true;
 }
