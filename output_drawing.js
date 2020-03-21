@@ -3,14 +3,19 @@ function setOpacity (sliderValue) {
 }
 
 function dispWIP () {
-  // Get top left
-  let [x, y] = topLeftTile ();
-  // Move to that tile
-  moveToTile(x, y);
-  // Call lsOut with it
-  lsOut(x, y);
-  // Fade master
-  d3.selectAll(".masterTile").style("opacity", 0);
+  let wipTileCount = Object.keys(localStorage).length;
+  if (wipTileCount < 5) {
+    alert("No WIP tiles found");
+  } else {
+    // Get top left
+    let [x, y] = topLeftTile ();
+    // Move to that tile
+    moveToTile(x, y);
+    // Call lsOut with it
+    lsOut(x, y);
+    // Fade master
+    d3.selectAll(".masterTile").style("opacity", 0);
+  }
 }
 function topLeftTile () {
   let tileCoords = d3.select("#container").selectAll(".tile")[0].map(d => d3.select(d).attr("src").substr(44, 15).replace(".png", "").split("/"));

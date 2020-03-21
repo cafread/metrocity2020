@@ -254,7 +254,7 @@ function moveToTile (x=60, y=40) {
   zoom.translate([256 * (64 - x), 256 * (64 - y)]);
   zoomed();
 }
-function persistResult () {
+function persistResult (withNotice=false) {
   let [minTileX, minTileY] = topLeftTile ();
   let outCanvas = document.getElementById("outputCanvas");
   let hiddenCanvas = document.getElementById("hiddenCanvas");
@@ -282,6 +282,8 @@ function persistResult () {
     col = 0;
     row++;
   }
+  document.getElementById("storeEdits").style.background = "green";
+  setTimeout(function(){document.getElementById("storeEdits").style.background = "";}, 600);
 }
 function zipAndDownload() {
   let zip = new JSZip();
