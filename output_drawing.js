@@ -85,7 +85,7 @@ function toggleFrozen () {
 function enableSample () {
   // Switch from observation mode to color sampling mode
   // Set cursor to pipette to make this obvious
-  document.getElementById("outputCanvas").style.cursor = "url(pip.png), pointer";
+  document.getElementById("outputCanvas").style.cursor = "url(res/pip.png), pointer";
   d3.select("#outputCanvas").on("click", sampleOutput);
   busyDrawing = false;
   allowDrawing = false;
@@ -93,7 +93,7 @@ function enableSample () {
 function enablePaint () {
   // Switch to painting mode
   // Set cursor to brush to make this obvious
-  document.getElementById("outputCanvas").style.cursor = "url(brush.png), pointer";
+  document.getElementById("outputCanvas").style.cursor = "url(res/brush.png), pointer";
   d3.select("#outputCanvas").on("click", sampleOutput);
   // Do painty stuff here
   d3.select("#colorPot").on("click", enableSample);

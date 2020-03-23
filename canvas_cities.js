@@ -6,8 +6,8 @@ const height = 1024 * globScl; // 256 * 4
 const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 let cityData = [];
 let isFrozen = false;
-d3.json("2020cities15k_trimmed.json", (err, dat) => {
-//d3.json("2020cities15k.json", (err, dat) => {
+d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
+//d3.json("res/2020cities15k.json", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
   cityData = dat;

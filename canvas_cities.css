@@ -151,12 +151,6 @@ input:checked + .toggle:before {
 }
 .toggle.round {border-radius: 34px;}
 .toggle.round:before {border-radius: 50%;}
-#brushInfo,
-#colorCont,
-#brWidCont {
-  /*display: inline-block;*/
-  /*white-space: nowrap;*/
-}
 #colorPot {
   height: 26px;
   width: 75px;
