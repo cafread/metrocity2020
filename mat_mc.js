@@ -7,7 +7,7 @@ let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 var colorToId = {"#000000": 0};
 var idToColor = {"0": "#000000"};
 var cityData = [];
-d3.csv("mat_mc.csv", (err, dat) => {
+d3.csv("res/mat_mc.csv", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
   cityData = dat;
