@@ -42,7 +42,7 @@ function lsOut (x, y) {
       lsVal = localStorage.getItem(lsKey);
       if (lsVal !== null) {
         imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
-        localStoreToOutput (x, y, tileX, tileY, imgSrc);
+        b64ToImage (tileX, tileY, imgSrc, "outputCanvas");
       }
       tileX++;
     }
@@ -52,7 +52,7 @@ function lsOut (x, y) {
   // Show detailed controls
   document.getElementById("mcControls").style.visibility = "visible";
 }
-function localStoreToOutput (x, y, tileX, tileY, imgSrc) {
+function b64ToImage (tileX, tileY, imgSrc) {
   let offsX = 256 * tileX;
   let offsY = 256 * tileY;
   let outCanvas = document.getElementById("outputCanvas");

@@ -93,14 +93,22 @@ function projBBox (cx, cy, simple) {
   let w = projection([lonMax, la])[0] - x;
   return [x + w / 2, y + h / 2, w, h];
 }
-function mousemoved () {
-  let metroCity = search(...d3.mouse(this));
-  if (metroCity && metroCity.n) {
-    metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
-  } else {
-    metroCity = "None";
-  }
+function mousemoved (e) {
+  let metroCity = "None";
   let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
+  if (document.getElementById("mcControls").style.visibility === "visible") { // Master tiles or mc projection active
+    let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
+    let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
+    let mcId = colorToId[mcColor];
+    if (mcId !== 0) metroCity = cityData.find(d => d.i === mcId).n;
+  } else {
+    metroCity = search(...d3.mouse(this));
+    if (metroCity && metroCity.n) {
+      metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
+    } else {
+      metroCity = "None";
+    }
+  }
   info.textContent = metroCity + thisPosition + thisLatLong;
 }
