@@ -101,7 +101,8 @@ function mousemoved (e) {
     let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
     let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
     let mcId = colorToId[mcColor];
-    if (mcId !== 0) metroCity = cityData.find(d => d.i === mcId).n;
+    let mcInf = cityData.find(d => d.i === mcId);
+    if (mcInf) metroCity = mcInf.n;
   } else {
     metroCity = search(...d3.mouse(this));
     if (metroCity && metroCity.n) {
