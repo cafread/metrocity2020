@@ -1,7 +1,6 @@
 function setOpacity (sliderValue) {
   document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
 }
-
 function dispWIP () {
   let wipTileCount = Object.keys(localStorage).length;
   if (wipTileCount < 5) {
@@ -11,8 +10,8 @@ function dispWIP () {
     let [x, y] = topLeftTile ();
     // Move to that tile
     moveToTile(x, y);
-    // Call lsOut with it
-    lsOut(x, y);
+    // Find tile data and draw it for x, y
+    retrieveLSToDraw(x, y);
     // Fade master
     d3.selectAll(".masterTile").style("opacity", 0);
   }
@@ -23,9 +22,7 @@ function topLeftTile () {
   let minTileY = d3.min(tileCoords, d => +d[1]);
   return [minTileX, minTileY];
 }
-
-
-function lsOut (x, y) {
+function retrieveLSToDraw (x, y) {
   // Given the upper left x & y tile details, pull from localStorage all saved tiles
   let tileX = 0;
   let tileY = 0;
@@ -42,7 +39,7 @@ function lsOut (x, y) {
       lsVal = localStorage.getItem(lsKey);
       if (lsVal !== null) {
         imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
-        b64ToImage (tileX, tileY, imgSrc, "outputCanvas");
+        drawWipTile (tileX, tileY, imgSrc, "outputCanvas");
       }
       tileX++;
     }
@@ -52,7 +49,7 @@ function lsOut (x, y) {
   // Show detailed controls
   document.getElementById("mcControls").style.visibility = "visible";
 }
-function b64ToImage (tileX, tileY, imgSrc) {
+function drawWipTile (tileX, tileY, imgSrc) {
   let offsX = 256 * tileX;
   let offsY = 256 * tileY;
   let outCanvas = document.getElementById("outputCanvas");
@@ -61,7 +58,6 @@ function b64ToImage (tileX, tileY, imgSrc) {
   masterTile.onload = function(){outContext.drawImage(masterTile, offsX, offsY, 256, 256);};
   masterTile.src = imgSrc;
 }
-
 function toggleFrozen () {
   isFrozen = document.getElementById("frozenToggle").checked;
   if (!isFrozen) {

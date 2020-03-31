@@ -20,11 +20,13 @@
       <div id="map">
         <canvas id="citiesCanvas" class="mapLayer"></canvas>
         <canvas id="outputCanvas" class="outputLayer"></canvas>
+        <canvas id="drawCanvas" class="drawLayer"></canvas>
       </div>
       <div id="info"></div>
       <div class="credit"><p>Data &copy; <a href="https://www.geonames.org/">GeoNames</a> Tiles &copy; <a href="https://cartodb.com/attributions">CartoDB</a></p></div>
     </div>
     <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="excludedGeoIds.js"></script>
     <script type="text/javascript" src="canvas_cities.js"></script>
     <script type="text/javascript" src="output_drawing.js"></script>
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>

@@ -10,8 +10,8 @@ d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
 //d3.json("res/2020cities15k.json", (err, dat) => {
   // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
-  cityData = dat;
-  dat.forEach(d => colorGen(d.i));
+  cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
+  cityData.forEach(d => colorGen(d.i));
   createMap();
 });
 let tile = d3.geo.tile().size([width, height]);
@@ -50,7 +50,7 @@ function createMap () {
   let rad = Math.pow(zoom.scale(), 0.4) / 20;
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.lo, d.la]);
-    d.r = rad;
+    d.r = rad * Math.sqrt(d.p / 80000);
     d.f = idToColor[d.i];
     return d;
   });
@@ -64,7 +64,7 @@ function drawCanvas () {
     quadtree.insert(pt);
     citiesContext.beginPath();
 		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
-		citiesContext.fillStyle = d.f;
+		citiesContext.fillStyle = d.p < 30000 ? "red" : "black";//d.f;
     citiesContext.fill();
     citiesContext.closePath();
   });
@@ -100,7 +100,7 @@ function zoomed () {
   let rad = Math.pow(zoom.scale(), 0.4) / 20;
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.lo, d.la]);
-    d.r = rad;
+    d.r = rad * Math.sqrt(d.p / 80000);
     return d;
   });
   reDraw();
@@ -249,6 +249,7 @@ function generateMaster () {
     moveToTile(tileX, tileY);
   }
   moveToTile(); // Reset back to the UK
+  alert("Master made");
 }
 function moveToTile (x=60, y=40) {
   zoom.translate([256 * (64 - x), 256 * (64 - y)]);
