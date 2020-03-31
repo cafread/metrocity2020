@@ -189,6 +189,7 @@ function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality
     // Draw the full size rectangle on the canvas
     let outputId = MC.nw ? MC.nw.i : 0;
     if (outputId > 0) {
+      //cityData.find(d => d.i === outputId).px += w*w;
       outputContext.fillStyle = idToColor[outputId];
       outputContext.fillRect(x, y, w, w);
     }
@@ -199,6 +200,7 @@ function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality
     for (let c of corners) {
       outputId = MC[c] ? MC[c].i : 0;
       if (outputId > 0) {
+        //cityData.find(d => d.i === outputId).px += 4;
         outputContext.fillStyle = idToColor[outputId];
         outputContext.fillRect(x, y, w, w);
       }
@@ -229,6 +231,8 @@ function saveResult () {
 function generateMaster () {
   if (!confirm("Are you sure? This will take a little while and will clear local storage")) return;
   localStorage.clear();
+  // For testing how many pixels each claims
+  //for (let i = 0; i < cityData.length; i++) cityData[i].px = 0;
   let tileX = 0;  // Range is 00 to 127, window is 6 tiles wide (1536px)
   let tileY = 17; // Range is 17 to 087, window is 4 tiles tall (1024px)
   moveToTile(tileX, tileY);
