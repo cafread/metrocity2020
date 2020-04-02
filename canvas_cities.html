@@ -32,11 +32,9 @@
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
     <button id="dispWIP" onclick="dispWIP()">Display WIP</button>
     <div id="mcControls" style="visibility: hidden;">
-      <button onclick="saveResult()">Export MC png</button><br>
-      <button onclick="saveInfo()">Export MC info</button><br>
       Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input><br>
-      Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label><br>
       <div id="brushInfo" style="visibility: hidden;">
+        Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label><br>
         <div id="colorCont">
           Color: <div id="colorPot" style="display: inline-block; color: white"></div><br>
           City: <span id="paintCity"></span>

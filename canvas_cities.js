@@ -113,8 +113,7 @@ function zoomed () {
   image.exit().remove();
   image.enter().append("img")
     .attr("class", "tile")
-    .attr("src", d => "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
-    .attr("onerror", "this.src='tiles/none.png'")
+    .attr("src", d => d[0] > 127 ? "tiles/none.png" : "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
   d3.selectAll(".masterTile").style("opacity", 0.15);
@@ -125,7 +124,12 @@ function zoomed () {
       master.exit().remove();
   master.enter().append("img")
     .attr("class", "masterTile")
-    .attr("src", d => "tiles/" + lpad(d[0], 3) + "_" + lpad(d[1], 3) + ".png")
+    .attr("src", d => {
+      if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
+      let tileKey = lpad(d[0], 3) + "_" + lpad(d[1], 3);
+      if (Object.keys(localStorage).length > 1 && localStorage.getItem(tileKey) === null) return "tiles/none.png";
+      return "tiles/" + tileKey + ".png";
+    })
     .attr("onerror", "this.src='tiles/none.png'")
     .style("opacity", 0.15)
     .style("left", d => (d[0] << 8) + "px")
@@ -169,15 +173,11 @@ function mapMCs (scl=8) {
       shadeMap(i * scl, j * scl, scl);
     }
   }
-  document.getElementById("mcControls").style.visibility = "visible";
+  document.getElementById("mcControls").style.visibility = "visible"; // Should only show opacity, not painting
 }
-// Note there are 1.6 million pixels, many of which will contain nothing
-// so the code should be written with this in mind rather than going at it 1.6 million times!
-function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality balance is off
+function shadeMap (x=0, y=0, w=8) {
   // width = height as square
-  // This is intended for web workers - many threads can be triggered
   // Note that x is the left, y, the top, not the centroid as in a Rectangle
-  // 0, 0, 16 are defaults for the initial call
   // This will be called recursively for dense areas
   let MC = {
     nw: search(x    , y    ), // North West corner
@@ -185,16 +185,14 @@ function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality
     sw: search(x    , y + w), // South West corner
     se: search(x + w, y + w)  // South East corner
   };
-  if (mcEqual(MC)) {
-    // Draw the full size rectangle on the canvas
+  if (mcEqual(MC)) { // Draw the full size rectangle on the canvas
     let outputId = MC.nw ? MC.nw.i : 0;
     if (outputId > 0) {
       //cityData.find(d => d.i === outputId).px += w*w;
       outputContext.fillStyle = idToColor[outputId];
       outputContext.fillRect(x, y, w, w);
     }
-  } else if (w === 2) {
-    // Draw corner points
+  } else if (w === 2) { // Draw corner points
     let corners = ["nw", "ne", "sw", "se"];
     let outputId;
     for (let c of corners) {
@@ -205,14 +203,12 @@ function shadeMap (x=0, y=0, w=8) { // Can tighten size if performance / quality
         outputContext.fillRect(x, y, w, w);
       }
     }
-  } else {
-    // Sub-divide
+  } else { // Sub-divide
     shadeMap(x,       y      , w/2, w/2);
     shadeMap(x + w/2, y      , w/2, w/2);
     shadeMap(x      , y + w/2, w/2, w/2);
     shadeMap(x + w/2, y + w/2, w/2, w/2);
-  } 
-  // let imgData = outputContext.getImageData(x, y, w, h);
+  }
 }
 function mcEqual (mc4) { // Test if four corner MCs have the same id
   let nw = mc4.nw ? mc4.nw.i : 0;
@@ -222,11 +218,6 @@ function mcEqual (mc4) { // Test if four corner MCs have the same id
   if (nw !== sw) return false;
   let se = mc4.se ? mc4.se.i : 0;
   return nw === se;
-}
-function saveResult () {
-  let outCanvas = document.getElementById("outputCanvas");
-  let outImage = outCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-  window.location.href=outImage;
 }
 function generateMaster () {
   if (!confirm("Are you sure? This will take a little while and will clear local storage")) return;
@@ -290,7 +281,7 @@ function persistResult (withNotice=false) {
   document.getElementById("storeEdits").style.background = "lightgreen";
   setTimeout(function(){document.getElementById("storeEdits").style.background = "";}, 600);
 }
-function zipAndDownload() {
+function zipAndDownload () {
   let zip = new JSZip();
   let tls = zip.folder("tiles");
   let lsKeys = Object.keys(localStorage);
@@ -306,25 +297,4 @@ function getTileData (x, y) {
   if (compressed === null) return nullTile;
   let uncompressed = LZString.decompress(compressed);
   return tileCode + uncompressed;
-}
-function saveInfo () {
-  // Save projection of [0, 0], [width, 0], [0, height], [width, height]
-  // Save idToColor
-  let proj = {
-    scale: zoom.scale(),
-    nw: projection.invert([0, 0]),
-    ne: projection.invert([width, 0]),
-    sw: projection.invert([0, height]),
-    se: projection.invert([width, height])
-  }
-  const encode = (s) => new Uint8Array(s.split("").map(d => d.charCodeAt()));
-  let data = encode(JSON.stringify({proj: proj, idToColor: idToColor}, null, 2));
-  let blob = new Blob([data], {type: 'application/octet-stream'});
-  url = URL.createObjectURL(blob);
-  let link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", "metroCityInfo.json");
-  let event = document.createEvent("MouseEvents");
-  event.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-  link.dispatchEvent(event);
 }
