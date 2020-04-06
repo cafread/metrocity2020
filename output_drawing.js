@@ -107,9 +107,7 @@ function sampleOutput () {
   penColor = rgba;
   document.getElementById("colorPot").style.background = penColor;
   let mcid = colorToId[penColor];
-  console.log(penColor, mcid);
   let mc = mcid ? cityData.find(d => d.i === mcid).n : "None";
-  console.log(penColor, mcid, mc);
   document.getElementById("paintCity").textContent = mc;
   enablePaint ();
 }
@@ -117,8 +115,8 @@ function sampleOutput () {
 // Requires Mootools 1.4.5
 // TODO move this into a class?
 // Might need to alter the z-index of editCanvas and outputCanvas based on state
-let myArt;// = document.getElementById("editCanvas");
-let artContext;// = myArt.getContext("2d");
+let myArt;
+let artContext;
 let busyDrawing = false;
 let allowDrawing = false;
 
@@ -130,6 +128,7 @@ function addClick (x, y, dragging) {
   clickX.push(x);
   clickY.push(y);
   clickDrag.push(dragging);
+  reDrawArt();
 }
 function reDrawArt () {
   artContext.clearRect(0, 0, width, height); // Clears the canvas
@@ -152,6 +151,7 @@ function transferArt () {
   // Takes the temporary work on the editCanvas and transfers it to the outputCanvas
   // This is only called once the edit work has completed and avoids glitchy drawing
   artContext.clearRect(0, 0, width, height); // Clears the edit canvas
+  busyDrawing = false;
   if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
     outputContext.globalCompositeOperation = "destination-out";
     outputContext.strokeStyle = "rgba(255,255,255,1)";
@@ -203,20 +203,8 @@ function initArt () {
     let mouseY = event.pageY - this.offsetTop;
     busyDrawing = true;
     addClick(mouseX, mouseY, false);
-    reDrawArt();
   }
-  myArt.onmousemove = function (event) {
-    if (busyDrawing) {
-      addClick(event.pageX - this.offsetLeft, event.pageY - this.offsetTop, true);
-      reDrawArt();
-    }
-  }
-  myArt.onmouseup = () => {
-    transferArt ();
-    busyDrawing = false;
-  };
-  myArt.onmouseleave = () => {
-    transferArt ();
-    busyDrawing = false;
-  }
+  myArt.onmousemove = function (e) {if (busyDrawing) addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);}
+  myArt.onmouseup = () => transferArt ();
+  myArt.onmouseleave = () => busyDrawing = false;
 }
