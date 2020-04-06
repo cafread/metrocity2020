@@ -27,7 +27,6 @@ let container = d3.select("#container")
     .style("height", height + "px")
     .call(zoom)
     .on("mousemove", mousemoved);
-let base = d3.select("#map");
 let chart = d3.select("#citiesCanvas")
     .attr("class", "mapLayer")
     .attr("width", width)
@@ -250,7 +249,7 @@ function moveToTile (x=60, y=40) {
   zoom.translate([256 * (64 - x), 256 * (64 - y)]);
   zoomed();
 }
-function persistResult (withNotice=false) {
+function persistResult () {
   let [minTileX, minTileY] = topLeftTile ();
   let outCanvas = document.getElementById("outputCanvas");
   let hiddenCanvas = document.getElementById("hiddenCanvas");
