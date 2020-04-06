@@ -113,3 +113,16 @@ function mousemoved (e) {
   }
   info.textContent = metroCity + thisPosition + thisLatLong;
 }
+function countOnscreenWipTiles (x, y) {
+  let lsKeys = Object.keys(localStorage);
+  [xMin, xMax, yMin, yMax] = [+x, +x + 6, +y, +y + 4];
+  if (lsKeys.length === 0) return 0;
+  let onscKeys = lsKeys.filter(k => {
+    [_x, _y] = k.split("_");
+    return _x >= xMin && _x < xMax && _y >= yMin && _y < yMax;
+  });
+  return onscKeys.length;
+}
+function countOnscreenMasterTiles () {
+  return d3.selectAll(".masterTile")[0].filter(d => d["src"].slice(-8) != "none.png").length;
+}

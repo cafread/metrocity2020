@@ -3,16 +3,26 @@ function setOpacity (sliderValue) {
   document.getElementById("editCanvas").style.opacity = sliderValue / 100;
 }
 function dispWIP () {
+  // Get top left
+  let [x, y] = topLeftTile ();
+  // Move to that tile
+  moveToTile(x, y);
+  // Check to see if we have a work in progress tile set to work with for this area
   let wipTileCount = Object.keys(localStorage).length;
-  if (wipTileCount < 5) {
-    alert("No WIP tiles found");
-  } else {
-    // Get top left
-    let [x, y] = topLeftTile ();
-    // Move to that tile
-    moveToTile(x, y);
-    // Find tile data and draw it for x, y
-    retrieveLSToDraw(x, y);
+  let wipOnscreenCount = countOnscreenWipTiles(x, y);
+  let masterOnscreenCount = countOnscreenMasterTiles();
+  if (wipTileCount === 0 && masterOnscreenCount === 0) {
+    alert("No tiles found");
+  } else if (wipOnscreenCount === 0 && masterOnscreenCount === 0) {
+    alert("No tiles found for this area");
+  } else if (wipOnscreenCount === 0 && masterOnscreenCount > 0) {
+    // Copy master to outputCanvas if master has data but localStorage does not
+    dataToTile(x, y, "Master");
+    // Fade master
+    d3.selectAll(".masterTile").style("opacity", 0);
+    document.getElementById("freezeControl").style.visibility = "visible";
+  } else { // Find WIP tile data and draw it for x, y
+    dataToTile(x, y, "localStorage");
     // Fade master
     d3.selectAll(".masterTile").style("opacity", 0);
     document.getElementById("freezeControl").style.visibility = "visible";
@@ -24,24 +34,25 @@ function topLeftTile () {
   let minTileY = d3.min(tileCoords, d => +d[1]);
   return [minTileX, minTileY];
 }
-function retrieveLSToDraw (x, y) {
+function dataToTile (x, y, source="localStorage") {
   // Given the upper left x & y tile details, pull from localStorage all saved tiles
   let tileX = 0;
   let tileY = 0;
-  let offsX = 0;
-  let offsY = 0;
-  let lsKey = "";
+  let tileKey = "";
   let lsVal = "";
   let imgSrc = "";
   while (tileY < 4) {
     while (tileX < 6) {
-      offsX = 256 * tileX;
-      offsY = 256 * tileY;
-      lsKey = lpad(x + tileX, 3) + "_" + lpad(y + tileY, 3);
-      lsVal = localStorage.getItem(lsKey);
-      if (lsVal !== null) {
-        imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
-        drawWipTile (tileX, tileY, imgSrc, "outputCanvas");
+      tileKey = lpad(x + tileX, 3) + "_" + lpad(y + tileY, 3);
+      if (source === "localStorage") {
+        lsVal = localStorage.getItem(tileKey);
+        if (lsVal !== null) {
+          imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
+          drawWipTile (tileX, tileY, imgSrc);
+        }
+      } else { // Source is Master
+        imgSrc = "tiles/" + tileKey + ".png";
+        drawWipTile (tileX, tileY, imgSrc);
       }
       tileX++;
     }
@@ -69,8 +80,8 @@ function toggleFrozen () {
     document.getElementById("brushInfo").style.visibility = "hidden";
     d3.select("#outputCanvas").on("click", null);
     d3.select("#editCanvas").on("click", null);
-    allowDrawing = false;
-    busyDrawing = false
+    editState.allowDrawing = false;
+    editState.busyDrawing = false
   } else {
     enableSample ();
     penColor = "rgba(255,255,255,1)";
@@ -78,7 +89,7 @@ function toggleFrozen () {
     document.getElementById("mapMCs").style.visibility = "hidden";
     document.getElementById("dispWIP").style.visibility = "hidden";
     document.getElementById("brushInfo").style.visibility = "visible";
-    allowDrawing = false;
+    editState.allowDrawing = false;
   }
   if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove();
 }
@@ -88,8 +99,8 @@ function enableSample () {
   document.getElementById("outputCanvas").style.cursor = "url(res/pip.png), pointer";
   if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove();
   d3.select("#outputCanvas").on("click", sampleOutput);
-  busyDrawing = false;
-  allowDrawing = false;
+  editState.busyDrawing = false;
+  editState.allowDrawing = false;
 }
 function enablePaint () {
   // Switch to painting mode
@@ -113,45 +124,42 @@ function sampleOutput () {
 }
 
 // Requires Mootools 1.4.5
-// TODO move this into a class?
-// Might need to alter the z-index of editCanvas and outputCanvas based on state
-let myArt;
-let artContext;
-let busyDrawing = false;
-let allowDrawing = false;
-
-let clickX = [];
-let clickY = [];
-let clickDrag = [];
-
+let editState = {
+  busyDrawing: false,
+  allowDrawing: false,
+  clickX: [],
+  clickY: [],
+  clickDrag: [],
+  context: null
+}
 function addClick (x, y, dragging) {
-  clickX.push(x);
-  clickY.push(y);
-  clickDrag.push(dragging);
+  editState.clickX.push(x);
+  editState.clickY.push(y);
+  editState.clickDrag.push(dragging);
   reDrawArt();
 }
 function reDrawArt () {
-  artContext.clearRect(0, 0, width, height); // Clears the canvas
-  artContext.strokeStyle = penColor;
-  artContext.lineJoin = "round";
-  artContext.lineWidth = document.getElementById("brushSize").value;
-  for (let i = 0; i < clickX.length; i++) {
-    artContext.beginPath();
-    if (clickDrag[i] && i) {
-      artContext.moveTo(clickX[i - 1], clickY[i - 1]);
+  editState.context.clearRect(0, 0, width, height); // Clears the canvas
+  editState.context.strokeStyle = penColor;
+  editState.context.lineJoin = "round";
+  editState.context.lineWidth = document.getElementById("brushSize").value;
+  for (let i = 0; i < editState.clickX.length; i++) {
+    editState.context.beginPath();
+    if (editState.clickDrag[i] && i) {
+      editState.context.moveTo(editState.clickX[i - 1], editState.clickY[i - 1]);
      } else {
-      artContext.moveTo(clickX[i] - 1, clickY[i]);
+      editState.context.moveTo(editState.clickX[i] - 1, editState.clickY[i]);
      }
-     artContext.lineTo(clickX[i], clickY[i]);
-     artContext.closePath();
-     artContext.stroke();
+     editState.context.lineTo(editState.clickX[i], editState.clickY[i]);
+     editState.context.closePath();
+     editState.context.stroke();
   }
 }
 function transferArt () {
   // Takes the temporary work on the editCanvas and transfers it to the outputCanvas
   // This is only called once the edit work has completed and avoids glitchy drawing
-  artContext.clearRect(0, 0, width, height); // Clears the edit canvas
-  busyDrawing = false;
+  editState.context.clearRect(0, 0, width, height); // Clears the edit canvas
+  editState.busyDrawing = false;
   if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
     outputContext.globalCompositeOperation = "destination-out";
     outputContext.strokeStyle = "rgba(255,255,255,1)";
@@ -161,50 +169,48 @@ function transferArt () {
   }
   outputContext.lineJoin = "round";
   outputContext.lineWidth = document.getElementById("brushSize").value;
-  for (let i = 0; i < clickX.length; i++) {
+  for (let i = 0; i < editState.clickX.length; i++) {
     outputContext.beginPath();
-    if (clickDrag[i] && i) {
-      outputContext.moveTo(clickX[i - 1], clickY[i - 1]);
+    if (editState.clickDrag[i] && i) {
+      outputContext.moveTo(editState.clickX[i - 1], editState.clickY[i - 1]);
      } else {
-      outputContext.moveTo(clickX[i] - 1, clickY[i]);
+      outputContext.moveTo(editState.clickX[i] - 1, editState.clickY[i]);
      }
-     outputContext.lineTo(clickX[i], clickY[i]);
+     outputContext.lineTo(editState.clickX[i], editState.clickY[i]);
      outputContext.closePath();
      outputContext.stroke();
   }
-  clickX.length = 0;
-  clickY.length = 0;
-  clickDrag.length = 0;
+  editState.clickX.length = 0;
+  editState.clickY.length = 0;
+  editState.clickDrag.length = 0;
 }
-
 function addPaint () {
   // Now to do the painty bit itself
-  allowDrawing = true;
-  if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove(); // Just in case
+  editState.allowDrawing = true;
+  if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove();
   let container = document.getElementById("map");
 	let editCanvas = document.createElement("canvas");
   editCanvas.setAttribute("width", width);
   editCanvas.setAttribute("height", height);
   editCanvas.setAttribute("id", "editCanvas");
+  editCanvas.style.cursor = "url(res/brush.png), pointer";
   container.appendChild(editCanvas);
   // Remove this canvas later - on sample, on persist, on unfreeze d3.select("#editCanvas").remove()
-  myArt = document.getElementById("editCanvas"); //
-  myArt.style.cursor = "url(res/brush.png), pointer";
-  artContext = myArt.getContext("2d");
-  initArt ();
+  editState.context = editCanvas.getContext("2d");
+  initArt (editCanvas);
 }
-function initArt () {
-  myArt.onselectstart = () => {};
-  myArt.unselectable = "on";
-  myArt.style.MozUserSelect = "none";
-  myArt.onmousedown = function (event) {
-    busyDrawing = allowDrawing;
-    let mouseX = event.pageX - this.offsetLeft;
-    let mouseY = event.pageY - this.offsetTop;
-    busyDrawing = true;
+function initArt (canvas) {
+  canvas.onselectstart = () => {};
+  canvas.unselectable = "on";
+  canvas.style.MozUserSelect = "none";
+  canvas.onmousedown = function (e) {
+    editState.busyDrawing = editState.allowDrawing;
+    let mouseX = e.pageX - this.offsetLeft;
+    let mouseY = e.pageY - this.offsetTop;
+    editState.busyDrawing = true;
     addClick(mouseX, mouseY, false);
   }
-  myArt.onmousemove = function (e) {if (busyDrawing) addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);}
-  myArt.onmouseup = () => transferArt ();
-  myArt.onmouseleave = () => busyDrawing = false;
+  canvas.onmousemove = function (e) {if (editState.busyDrawing) addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);}
+  canvas.onmouseup = () => transferArt();
+  canvas.onmouseleave = () => editState.busyDrawing = false;
 }
