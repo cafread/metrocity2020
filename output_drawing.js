@@ -1,5 +1,6 @@
 function setOpacity (sliderValue) {
   document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
+  document.getElementById("editCanvas").style.opacity = sliderValue / 100;
 }
 function dispWIP () {
   let wipTileCount = Object.keys(localStorage).length;
@@ -14,6 +15,7 @@ function dispWIP () {
     retrieveLSToDraw(x, y);
     // Fade master
     d3.selectAll(".masterTile").style("opacity", 0);
+    document.getElementById("freezeControl").style.visibility = "visible";
   }
 }
 function topLeftTile () {
@@ -66,6 +68,7 @@ function toggleFrozen () {
     document.getElementById("dispWIP").style.visibility = "visible";
     document.getElementById("brushInfo").style.visibility = "hidden";
     d3.select("#outputCanvas").on("click", null);
+    d3.select("#editCanvas").on("click", null);
     allowDrawing = false;
     busyDrawing = false
   } else {
@@ -77,11 +80,13 @@ function toggleFrozen () {
     document.getElementById("brushInfo").style.visibility = "visible";
     allowDrawing = false;
   }
+  if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove();
 }
 function enableSample () {
   // Switch from observation mode to color sampling mode
   // Set cursor to pipette to make this obvious
   document.getElementById("outputCanvas").style.cursor = "url(res/pip.png), pointer";
+  if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove();
   d3.select("#outputCanvas").on("click", sampleOutput);
   busyDrawing = false;
   allowDrawing = false;
@@ -110,30 +115,43 @@ function sampleOutput () {
 }
 
 // Requires Mootools 1.4.5
-// TODO move this into a class
-let myArt = document.getElementById("outputCanvas");
+// TODO move this into a class?
+// Might need to alter the z-index of editCanvas and outputCanvas based on state
+let myArt;// = document.getElementById("editCanvas");
+let artContext;// = myArt.getContext("2d");
 let busyDrawing = false;
 let allowDrawing = false;
-myArt.onselectstart = () => {};
-myArt.unselectable = "on";
-myArt.style.MozUserSelect = "none";
-myArt.onmousedown = (event) => {
-  busyDrawing = allowDrawing;
-  outputContext.strokeStyle = penColor;
-  outputContext.lineWidth = document.getElementById("brushSize").value;
-  outputContext.lineCap = "round";
-  outputContext.beginPath();
-  outputContext.moveTo(event.pageX - myArt.offsetLeft, event.pageY);
+
+let clickX = [];
+let clickY = [];
+let clickDrag = [];
+
+function addClick (x, y, dragging) {
+  clickX.push(x);
+  clickY.push(y);
+  clickDrag.push(dragging);
 }
-myArt.onmouseup = () => busyDrawing = false;
-myArt.onmousemove = (event) => {
-  if (busyDrawing) {
-    outputContext.lineTo(event.pageX - myArt.offsetLeft, event.pageY);
-    outputContext.stroke();
+function reDrawArt () {
+  artContext.clearRect(0, 0, width, height); // Clears the canvas
+  artContext.strokeStyle = penColor;
+  artContext.lineJoin = "round";
+  artContext.lineWidth = document.getElementById("brushSize").value;
+  for (let i = 0; i < clickX.length; i++) {
+    artContext.beginPath();
+    if (clickDrag[i] && i) {
+      artContext.moveTo(clickX[i - 1], clickY[i - 1]);
+     } else {
+      artContext.moveTo(clickX[i] - 1, clickY[i]);
+     }
+     artContext.lineTo(clickX[i], clickY[i]);
+     artContext.closePath();
+     artContext.stroke();
   }
 }
-myArt.onmouseleave = () => busyDrawing = false;
-function addPaint () {
+function transferArt () {
+  // Takes the temporary work on the editCanvas and transfers it to the outputCanvas
+  // This is only called once the edit work has completed and avoids glitchy drawing
+  artContext.clearRect(0, 0, width, height); // Clears the edit canvas
   if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
     outputContext.globalCompositeOperation = "destination-out";
     outputContext.strokeStyle = "rgba(255,255,255,1)";
@@ -141,6 +159,64 @@ function addPaint () {
     outputContext.globalCompositeOperation = "source-over";
     outputContext.strokeStyle = penColor;
   }
+  outputContext.lineJoin = "round";
+  outputContext.lineWidth = document.getElementById("brushSize").value;
+  for (let i = 0; i < clickX.length; i++) {
+    outputContext.beginPath();
+    if (clickDrag[i] && i) {
+      outputContext.moveTo(clickX[i - 1], clickY[i - 1]);
+     } else {
+      outputContext.moveTo(clickX[i] - 1, clickY[i]);
+     }
+     outputContext.lineTo(clickX[i], clickY[i]);
+     outputContext.closePath();
+     outputContext.stroke();
+  }
+  clickX.length = 0;
+  clickY.length = 0;
+  clickDrag.length = 0;
+}
+
+function addPaint () {
   // Now to do the painty bit itself
   allowDrawing = true;
+  if (document.getElementById("editCanvas") !== null) document.getElementById("editCanvas").remove(); // Just in case
+  let container = document.getElementById("map");
+	let editCanvas = document.createElement("canvas");
+  editCanvas.setAttribute("width", width);
+  editCanvas.setAttribute("height", height);
+  editCanvas.setAttribute("id", "editCanvas");
+  container.appendChild(editCanvas);
+  // Remove this canvas later - on sample, on persist, on unfreeze d3.select("#editCanvas").remove()
+  myArt = document.getElementById("editCanvas"); //
+  myArt.style.cursor = "url(res/brush.png), pointer";
+  artContext = myArt.getContext("2d");
+  initArt ();
+}
+function initArt () {
+  myArt.onselectstart = () => {};
+  myArt.unselectable = "on";
+  myArt.style.MozUserSelect = "none";
+  myArt.onmousedown = function (event) {
+    busyDrawing = allowDrawing;
+    let mouseX = event.pageX - this.offsetLeft;
+    let mouseY = event.pageY - this.offsetTop;
+    busyDrawing = true;
+    addClick(mouseX, mouseY, false);
+    reDrawArt();
+  }
+  myArt.onmousemove = function (event) {
+    if (busyDrawing) {
+      addClick(event.pageX - this.offsetLeft, event.pageY - this.offsetTop, true);
+      reDrawArt();
+    }
+  }
+  myArt.onmouseup = () => {
+    transferArt ();
+    busyDrawing = false;
+  };
+  myArt.onmouseleave = () => {
+    transferArt ();
+    busyDrawing = false;
+  }
 }

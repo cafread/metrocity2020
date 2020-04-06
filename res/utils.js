@@ -97,7 +97,7 @@ function mousemoved (e) {
   let metroCity = "None";
   let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
-  if (document.getElementById("mcControls").style.visibility === "visible") { // Master tiles or mc projection active
+  if (document.getElementById("mcControls").style.visibility === "visible") { // WIP projection active
     let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
     let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
     let mcId = colorToId[mcColor];

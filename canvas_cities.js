@@ -33,7 +33,6 @@ let chart = d3.select("#citiesCanvas")
     .attr("width", width)
     .attr("height", height);
 let output = d3.select("#outputCanvas")
-    .attr("class", "outputLayer")
     .attr("width", width)
     .attr("height", height);
 let penColor = "rgba(255,255,255,1)";
@@ -84,7 +83,8 @@ function reDraw () {
   // Clear cities
   citiesContext.clearRect(0, 0, width, height);
   // Clear the output
-  if (document.getElementById("mcControls") && document.getElementById("mcControls").style )document.getElementById("mcControls").style.visibility = "hidden";
+  if (document.getElementById("mcControls") && document.getElementById("mcControls").style)document.getElementById("mcControls").style.visibility = "hidden";
+  if (document.getElementById("freezeControl") && document.getElementById("freezeControl").style)document.getElementById("freezeControl").style.visibility = "hidden";
   outputContext.clearRect(0, 0, width, height);
   // Plot cities again
   drawCanvas();
