@@ -6,7 +6,7 @@ var idToColor = {"0": "#000000", "": "#000000"};
 var cityData = [];
 d3.csv("res/hotel_city.csv", (err, dat) => {
   if (err) throw err;
-  cityData = dat;
+  cityData = dat.sort((a, b) => b.usage_2019 - a.usage_2019);
   dat.forEach(d => colorGen_mk(d.city_id));
   createMap();
 });
@@ -49,7 +49,10 @@ function createMap () {
   drawCanvas();
 }
 function drawCanvas () {
+  let labelledCities = {};
+  let labelCount = 0;
   cityData.forEach(d => {
+    if (offScreenTest(d.x, d.y)) return;
     citiesContext.beginPath();
 		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
 		citiesContext.fillStyle = d.f;
@@ -64,12 +67,21 @@ function drawCanvas () {
       citiesContext.stroke();
     }
     // Draw label
-    if (d.city_id === d.city_id) {
+    if (labelCount <= 100 && labelledCities[d.city_id] === undefined) {
+      labelledCities[d.city_id] = 1;
+      labelCount++;
       citiesContext.fillStyle = "black";
-      citiesContext.font = "8px Arial";
+      citiesContext.font = "12px Arial";
       citiesContext.fillText(d.city_name, d.x2 + 7, d.y2);
     }
   });
+}
+function offScreenTest (x, y) {
+  if (x < -100) return true;
+  if (y < -100) return true;
+  if (x > width + 100) return true;
+  if (y > height + 100) return true;
+  return false;
 }
 function reDraw () {
   // Clear cities
