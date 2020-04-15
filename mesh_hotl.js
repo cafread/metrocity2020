@@ -44,15 +44,13 @@ function createMap () {
     [d.x2, d.y2] = projection([d.city_lon, d.city_lat]);
     d.r = rad * Math.sqrt(d.usage_2019);
     d.f = idToColor[d.city_id];
+    d.show = offScreenTest (d.x, d.y);
     return d;
   });
   drawCanvas();
 }
 function drawCanvas () {
-  let labelledCities = {};
-  let labelCount = 0;
-  cityData.forEach(d => {
-    if (offScreenTest(d.x, d.y)) return;
+  cityData.filter(d => d.show).forEach(d => {
     citiesContext.beginPath();
 		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
 		citiesContext.fillStyle = d.f;
@@ -66,6 +64,10 @@ function drawCanvas () {
       citiesContext.lineTo(d.x2, d.y2);
       citiesContext.stroke();
     }
+  });
+  let labelledCities = {};
+  let labelCount = 0;
+  cityData.filter(d => d.show).forEach(d => {
     // Draw label
     if (labelCount <= 100 && labelledCities[d.city_id] === undefined) {
       labelledCities[d.city_id] = 1;
@@ -77,11 +79,11 @@ function drawCanvas () {
   });
 }
 function offScreenTest (x, y) {
-  if (x < -100) return true;
-  if (y < -100) return true;
-  if (x > width + 100) return true;
-  if (y > height + 100) return true;
-  return false;
+  if (x < -100) return false;
+  if (y < -100) return false;
+  if (x > width + 100) return false;
+  if (y > height + 100) return false;
+  return true;
 }
 function reDraw () {
   // Clear cities
@@ -100,6 +102,7 @@ function zoomed () {
     [d.x, d.y] = projection([d.hotl_lon, d.hotl_lat]);
     [d.x2, d.y2] = projection([d.city_lon, d.city_lat]);
     d.r = rad * Math.sqrt(d.usage_2019);
+    d.show = offScreenTest (d.x, d.y);
     return d;
   });
   reDraw();
