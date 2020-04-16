@@ -126,3 +126,10 @@ function countOnscreenWipTiles (x, y) {
 function countOnscreenMasterTiles () {
   return d3.selectAll(".masterTile")[0].filter(d => d["src"].slice(-8) != "none.png").length;
 }
+function offScreenTest (x, y) {
+  if (x < -100) return false;
+  if (y < -100) return false;
+  if (x > width + 100) return false;
+  if (y > height + 100) return false;
+  return true;
+}

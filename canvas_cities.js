@@ -6,7 +6,8 @@ const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 let cityData = [];
 let isFrozen = false;
 d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
-  if (err) throw err;
+//d3.json("res/2020cities15k.json", (err, dat) => {
+    if (err) throw err;
   cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
   cityData.forEach(d => colorGen(d.i));
   createMap();
@@ -47,6 +48,7 @@ function createMap () {
     [d.x, d.y] = projection([d.lo, d.la]);
     d.r = rad * Math.sqrt(d.p / 80000);
     d.f = idToColor[d.i];
+    d.show = offScreenTest (d.x, d.y);
     return d;
   });
   drawCanvas();
@@ -54,7 +56,7 @@ function createMap () {
 function drawCanvas () {
   if (isFrozen) return;
   quadtree = new QuadTree(qtBound, 1);
-  cityData.forEach(d => {
+  cityData.filter(d => d.show).forEach(d => {
     let pt = new Point(d.x, d.y, d);
     quadtree.insert(pt);
     citiesContext.beginPath();
@@ -87,6 +89,7 @@ function zoomed () {
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.lo, d.la]);
     d.r = rad * Math.sqrt(d.p / 80000);
+    d.show = offScreenTest (d.x, d.y);
     return d;
   });
   reDraw();
@@ -210,7 +213,7 @@ function generateMaster () {
   localStorage.clear();
   // For testing how many pixels each claims
   //for (let i = 0; i < cityData.length; i++) cityData[i].px = 0;
-  let tileX = 0;  // Range is 00 to 127, window is 6 tiles wide (1536px)
+  let tileX = 0;  // Range is 00 to 127, window is 6 tiles wide (1536px) so max out with the left tile at 122
   let tileY = 17; // Range is 17 to 087, window is 4 tiles tall (1024px)
   moveToTile(tileX, tileY);
   while (tileY < 88) {
@@ -219,10 +222,10 @@ function generateMaster () {
       mapMCs();
       persistResult();
       moveToTile(tileX, tileY);
-      if (tileX === 124) {
+      if (tileX === 122) {
         tileX = 128;
       } else {
-        tileX = Math.min(124, tileX + 6);
+        tileX = Math.min(122, tileX + 6);
       }
     }
     tileX = 0;
