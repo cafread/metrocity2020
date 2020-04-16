@@ -1,14 +1,11 @@
 const nullTile = "data:image/octet-stream;base64,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";
 const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
-const globScl = 1;
-const width  = 1536 * globScl; // 256 * 6 and tiles are 256x256 pixels
-const height = 1024 * globScl; // 256 * 4
+const width  = 1536; // 256 * 6 and tiles are 256x256 pixels
+const height = 1024; // 256 * 4
 const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 let cityData = [];
 let isFrozen = false;
 d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
-//d3.json("res/2020cities15k.json", (err, dat) => {
-  // Trimmed variant removes all locations where at their location another location is returned for the metro city query
   if (err) throw err;
   cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
   cityData.forEach(d => colorGen(d.i));
@@ -19,7 +16,7 @@ let projection = d3.geo.mercator()
     .scale(1 << 15)
     .translate([-width / 2, -height / 2]);
 let zoom = d3.behavior.zoom()
-    .scale(1 << 15) // For pixel perfect tiles, scale is acceptable
+    .scale(1 << 15) // For pixel perfect tiles
     .scaleExtent([1 << 15, 1 << 15])
     .on("zoom", zoomed);
 let container = d3.select("#container")
@@ -67,16 +64,6 @@ function drawCanvas () {
     citiesContext.closePath();
   });
 }
-/*// This is the code which was used to generate the trimmed variant of the city data
-var relevantLocs = [];
-function trimPoints (elements) {
-  elements.each(function (d) {
-    let node = d3.select(this);
-    let mc = search(+node.attr("x"), +node.attr("y"));
-    if (mc && mc.i && +node.attr("id") === mc.i) relevantLocs.push(mc.i);
-  });
-  reDraw ();
-}*/
 function reDraw () {
   if (isFrozen) return;
   // Clear cities
@@ -126,7 +113,7 @@ function zoomed () {
     .attr("src", d => {
       if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
       let tileKey = lpad(d[0], 3) + "_" + lpad(d[1], 3);
-      if (Object.keys(localStorage).length > 1 && localStorage.getItem(tileKey) === null) return "tiles/none.png";
+      //if (Object.keys(localStorage).length > 1 && localStorage.getItem(tileKey) === null) return "tiles/none.png";
       return "tiles/" + tileKey + ".png";
     })
     .attr("onerror", "this.src='tiles/none.png'")

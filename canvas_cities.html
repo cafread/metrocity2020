@@ -32,7 +32,8 @@
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
     <button id="dispWIP" onclick="dispWIP()">Display WIP</button>
     <div id="mcControls" style="visibility: hidden;">
-      <div >Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value)"></input></div>
+      <div>Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value, ['outputCanvas', 'editCanvas'])"></input></div>
+      <div>City Opacity: <input class="slider" type="range" min="1" max="100" value="100" id="cityRange" oninput="setOpacity(this.value, ['citiesCanvas'])"></input></div>
       <div id="freezeControl" style="visibility: hidden;">Freeze: <label class="switch" onclick="toggleFrozen()"><input type="checkbox" id="frozenToggle"><span class="toggle round"></span></label></div>
       <div id="brushInfo" style="visibility: hidden;">
         <div id="colorCont">

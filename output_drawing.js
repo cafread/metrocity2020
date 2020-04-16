@@ -1,6 +1,5 @@
-function setOpacity (sliderValue) {
-  document.getElementById("outputCanvas").style.opacity = sliderValue / 100;
-  document.getElementById("editCanvas").style.opacity = sliderValue / 100;
+function setOpacity (sliderValue, elementIds=[]) {
+  for (let elid of elementIds) document.getElementById(elid).style.opacity = sliderValue / 100;
 }
 function dispWIP () {
   // Get top left
