@@ -38,6 +38,11 @@ class City {
     }
     target.beConsumed(this);
   }
+  unConsume (target) {
+    this.MCpop -= target.pop;
+    let index = this.hasConsumed.findIndex(f => f.id === target.id);
+    this.hasConsumed.splice(index, 1);
+  }
   released () {
     this.parentCity = null;
     this.MCpop = this.pop;
@@ -67,28 +72,24 @@ class City {
         }
     }
   }
-  findMostInfluential () {
+  findMostInfluential (cityData) {
     // Prey seeking out the most influential mc neighbour amongst candidates
-    // All cities require neighbours to be populated
+    // The result will change as the algo iterates and MC pops grow
     // This should be run for all several times as the MC pops will change after each run
     // -- What about candidates consuming one another?  Separate step?
-
-    /*
-    for all neighbours which are not yet themselves consumed
-    find their power level here
-    sort by power level
-    find most powerful candidate neighbour (mpn)
-    has this already been consumed?
-    has this already been consumed by mpn?
-    if not mpn.consume(this)
-    */
-
-
-    
+    if (!this.isCandidate && this.neighbours.length > 0) {
+      // Update neighbour influence once round is complete to reflect new MC Pops
+      let mc = this.neighbours.sort((a, b) => b.influence - a.influence).filter(n => cityData[n.id].parentCity === null)[0]];
+      // Need to filter for mc candidates which have not yet been consumed, otherwise we will likely have the same result as original mapping
+      // If the current parent mc was consumed, this must be released if it wasn't already
+      if (mc === undefined) {
+        if (this.parentCity !== null) this.released();
+      } else if (cityData[mc.id].canConsume(this, mc.distance) && this.parentCity.id !== mc.id) {
+        if (this.parentCity !== null) this.parentCity.unConsume(this);
+        cityData[mc.id].consume(this);
+      }
+    }
   }
-
-
-
   canConsume (target, distance) {
     if (this.MCpop < target.MCpop) return false;
     if ((0.7 * this.calcInfluence(distance)) > target.calcInfluence(0)) return true;

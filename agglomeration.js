@@ -80,7 +80,7 @@ function runAgglomeration() {
           // Add a property to each neighbour stating the current influence power
           // this will be updated per run to reflect changes in MCPops
           for (let n of neighbourCandidates) {
-            n.influence = agglomData[n.id].calcInfluence(n.dist);
+            n.influence = agglomData[n.id].calcInfluence(n.distance);
           }
         }
         agglomData[c].neighbours = neighbourCandidates;
@@ -107,11 +107,11 @@ function runAgglomeration() {
       let thisDist = greatCircleKm(la, lo, d.userData.lat, d.userData.lon);
       return {
         id: d.userData.id,
-        dist: +thisDist.toFixed(2),
+        distance: +thisDist.toFixed(2),
         countryCode: d.userData.countryCode
       };
     });
-    return cands.filter(d => d !== undefined && d.dist < 100).sort((a, b) => a.dist - b.dist);
+    return cands.filter(d => d !== undefined && d.distance < 100).sort((a, b) => a.distance - b.distance);
   }
 }
 function showAlgoResult () {
