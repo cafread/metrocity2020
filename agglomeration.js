@@ -54,8 +54,8 @@ function runAgglomeration() {
     // Basel-Mulhouse-Freiburg?
   };
   //d3.tsv("res/cities15000.txt", (err, dat) => {
-  //d3.tsv("res/cities5000.txt", (err, dat) => {
-  d3.tsv("res/cities1000.txt", (err, dat) => {
+  d3.tsv("res/cities5000.txt", (err, dat) => {
+  //d3.tsv("res/cities1000.txt", (err, dat) => {
     let allQtBound = new Rectangle(width / 2, height / 2, width * 300 / 6, height * 150 / 4);
     let allQuad = new QuadTree(allQtBound, 1);
     if (err) throw err;
