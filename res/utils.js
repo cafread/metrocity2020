@@ -42,94 +42,21 @@ function formatLocation (p, k) {
   return (p[1] < 0 ? format(-p[1]) + " S" : format(p[1]) + " N") + " "
        + (p[0] < 0 ? format(-p[0]) + " W" : format(p[0]) + " E");
 }
-function projBBox (cx, cy, simple) {
-  // Generate a bounding box based on a distance in all directions
-  const searchDist = 100;
-  // x, y are the centre of the rectangle we wish to create
-  let [lo, la] = projection.invert([cx, cy]); // lo, la in degrees
-  if (simple === true) {
-    // https://en.wikipedia.org/wiki/Latitude
-    // Longitude: 1 deg = 111.320 * cos(latitude in radians) km
-    let longAdj = searchDist / (111.320 * Math.cos(deg2rad(la)));
-    let x = projection([lo - longAdj, la])[0];
-    // Latitude: 1 deg = 110.574 km at the equator
-    let latAdj = searchDist / [110.574, 110.649, 110.852, 111.132, 111.412, 111.618, 111.694][Math.round(Math.abs(la) / 15)];
-    let y = projection([lo, la + latAdj])[1];
-    let w = projection([lo + longAdj, la])[0] - x;
-    let h = projection([lo, la - latAdj])[1] - y;
-    return [x + w / 2, y + h / 2, w, h];
-  }
-  // Complex method for verification
-  // Semi-axes of WGS-84 geoidal reference
-  const WGS84_a = 6378137.0;  // Major semiaxis in metres
-  const WGS84_b = 6356752.3;  // Minor semiaxis in metres
-  // Earth radius at a given latitude, according to the WGS-84 ellipsoid in metres
-  function WGS84EarthRadius (lat) {
-    // http://en.wikipedia.org/wiki/Earth_radius
-    let An = WGS84_a * WGS84_a * Math.cos(lat);
-    let Bn = WGS84_b * WGS84_b * Math.sin(lat);
-    let Ad = WGS84_a * Math.cos(lat);
-    let Bd = WGS84_b * Math.sin(lat);
-    return Math.sqrt((An*An + Bn*Bn) / (Ad*Ad + Bd*Bd));
-  }
-  // Bounding box surrounding the point at given coordinates,
-  // assuming local approximation of Earth surface as a sphere
-  // of radius given by WGS84
-  let lat = deg2rad(la);
-  let lon = deg2rad(lo);
-  let halfSide = searchDist * 1000;
-  // Radius of Earth at given latitude
-  let radius = WGS84EarthRadius(lat);
-  // Radius of the parallel at given latitude
-  let pradius = radius * Math.cos(lat);
-  let latMin = rad2deg(lat - halfSide / radius);
-  let latMax = rad2deg(lat + halfSide / radius); // latmax - latmin should be ~ 2 degrees
-  let lonMin = rad2deg(lon - halfSide / pradius);
-  let lonMax = rad2deg(lon + halfSide / pradius);
-  // Re-project
-  let x = projection([lonMin, la])[0];
-  let y = projection([lo, latMax])[1];
-  let h = projection([lo, latMin])[1] - y;
-  let w = projection([lonMax, la])[0] - x;
-  return [x + w / 2, y + h / 2, w, h];
-}
-function mousemoved (e) {
-  let metroCity = "None";
-  let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
-  let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
-  if (document.getElementById("mcControls").style.visibility === "visible") { // WIP projection active
-    let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
-    let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
-    let mcId = colorToId[mcColor];
-    let mcInf = cityData.find(d => d.i === mcId);
-    if (mcInf) metroCity = mcInf.n + ", id: " + mcId + ", pop: " + mcInf.p + ", color: " + mcColor;
-  } else {
-    metroCity = search(...d3.mouse(this));
-    if (metroCity && metroCity.n) {
-      metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
-    } else {
-      metroCity = "None";
-    }
-  }
-  info.textContent = metroCity + thisPosition + thisLatLong;
-}
-function countOnscreenWipTiles (x, y) {
-  let lsKeys = Object.keys(localStorage);
-  [xMin, xMax, yMin, yMax] = [+x, +x + 6, +y, +y + 4];
-  if (lsKeys.length === 0) return 0;
-  let onscKeys = lsKeys.filter(k => {
-    [_x, _y] = k.split("_");
-    return _x >= xMin && _x < xMax && _y >= yMin && _y < yMax;
-  });
-  return onscKeys.length;
-}
-function countOnscreenMasterTiles () {
-  return d3.selectAll(".masterTile")[0].filter(d => d["src"].slice(-8) != "none.png").length;
-}
 function offScreenTest (x, y) {
   if (x < -100) return false;
   if (y < -100) return false;
   if (x > width + 100) return false;
   if (y > height + 100) return false;
   return true;
+}
+function prefixMatch (p) {
+  let i = -1;
+  let n = p.length;
+  let s = document.body.style;
+  while (++i < n) {
+    if (p[i] + "Transform" in s) {
+      return "-" + p[i].toLowerCase() + "-";
+    }
+  }
+  return "";
 }

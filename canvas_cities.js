@@ -1,7 +1,7 @@
 
 
 const nullTile = "data:image/octet-stream;base64,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";
-const nullTile2 = "data:image/octet-stream;base64,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"
+let nullTile2 = "data:image/octet-stream;base64,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"
 const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
 const width  = 1536; // 256 * 6 and tiles are 256x256 pixels
 const height = 1024; // 256 * 4
@@ -54,6 +54,7 @@ function createMap () {
     d.show = offScreenTest (d.x, d.y);
     return d;
   });
+  createReferenceNullTile();
   drawCanvas();
 }
 function drawCanvas () {
@@ -64,7 +65,8 @@ function drawCanvas () {
     quadtree.insert(pt);
     citiesContext.beginPath();
 		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
-		citiesContext.fillStyle = d.p < 30000 ? "red" : "black";//d.f;
+		//citiesContext.fillStyle = d.p < 30000 ? "red" : "black";
+		citiesContext.fillStyle = d.f;
     citiesContext.fill();
     citiesContext.closePath();
   });
@@ -146,11 +148,6 @@ function search (x, y) {
     };
   });
   return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
-}
-function prefixMatch (p) {
-  let i = -1, n = p.length, s = document.body.style;
-  while (++i < n) if (p[i] + "Transform" in s) return "-" + p[i].toLowerCase() + "-";
-  return "";
 }
 function genScore (pop, dist) {
   return Math.sqrt(pop) * (100 - dist);
@@ -262,7 +259,6 @@ function persistResult () {
         if (outTile !== nullTile && outTile != nullTile2) {
           _key = lpad(minTileX + col, 3) + "_" + lpad(minTileY + row, 3);
           let compressedTile = LZString.compress(outTile.replace(tileCode, ""));
-          if (row === 0 && col === 0) console.log(outTile.toString());
           localStorage.setItem(_key, compressedTile);
         }
         col++;
@@ -292,4 +288,103 @@ function getTileData (x, y) {
   if (compressed === null) return nullTile;
   let uncompressed = LZString.decompress(compressed);
   return tileCode + uncompressed;
+}
+function createReferenceNullTile () {
+  // Creates a null tile specific to this browser to avoid breaking on browser updates to canvas handling
+  // Called once on load
+  let outCanvas = document.getElementById("outputCanvas");
+  let hiddenCanvas = document.getElementById("hiddenCanvas");
+  hiddenCanvas.width = 256;
+  hiddenCanvas.height = 256;
+  let hiddenContext = hiddenCanvas.getContext("2d");
+  hiddenContext.clearRect(0, 0, 256, 256);
+  hiddenContext.drawImage(outCanvas, 0, 0, 256, 256, 0, 0, 256, 256);
+  let outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+  if (outTile !== nullTile && outTile != nullTile2) {
+    nullTile2 = outTile;
+  }
+}
+function countOnscreenWipTiles (x, y) {
+  let lsKeys = Object.keys(localStorage);
+  [xMin, xMax, yMin, yMax] = [+x, +x + 6, +y, +y + 4];
+  if (lsKeys.length === 0) return 0;
+  let onscKeys = lsKeys.filter(k => {
+    [_x, _y] = k.split("_");
+    return _x >= xMin && _x < xMax && _y >= yMin && _y < yMax;
+  });
+  return onscKeys.length;
+}
+function countOnscreenMasterTiles () {
+  return d3.selectAll(".masterTile")[0].filter(d => d["src"].slice(-8) != "none.png").length;
+}
+function projBBox (cx, cy, simple) {
+  // Generate a bounding box based on a distance in all directions
+  const searchDist = 100;
+  // x, y are the centre of the rectangle we wish to create
+  let [lo, la] = projection.invert([cx, cy]); // lo, la in degrees
+  if (simple === true) {
+    // https://en.wikipedia.org/wiki/Latitude
+    // Longitude: 1 deg = 111.320 * cos(latitude in radians) km
+    let longAdj = searchDist / (111.320 * Math.cos(deg2rad(la)));
+    let x = projection([lo - longAdj, la])[0];
+    // Latitude: 1 deg = 110.574 km at the equator
+    let latAdj = searchDist / [110.574, 110.649, 110.852, 111.132, 111.412, 111.618, 111.694][Math.round(Math.abs(la) / 15)];
+    let y = projection([lo, la + latAdj])[1];
+    let w = projection([lo + longAdj, la])[0] - x;
+    let h = projection([lo, la - latAdj])[1] - y;
+    return [x + w / 2, y + h / 2, w, h];
+  }
+  // Complex method for verification
+  // Semi-axes of WGS-84 geoidal reference
+  const WGS84_a = 6378137.0;  // Major semiaxis in metres
+  const WGS84_b = 6356752.3;  // Minor semiaxis in metres
+  // Earth radius at a given latitude, according to the WGS-84 ellipsoid in metres
+  function WGS84EarthRadius (lat) {
+    // http://en.wikipedia.org/wiki/Earth_radius
+    let An = WGS84_a * WGS84_a * Math.cos(lat);
+    let Bn = WGS84_b * WGS84_b * Math.sin(lat);
+    let Ad = WGS84_a * Math.cos(lat);
+    let Bd = WGS84_b * Math.sin(lat);
+    return Math.sqrt((An*An + Bn*Bn) / (Ad*Ad + Bd*Bd));
+  }
+  // Bounding box surrounding the point at given coordinates,
+  // assuming local approximation of Earth surface as a sphere
+  // of radius given by WGS84
+  let lat = deg2rad(la);
+  let lon = deg2rad(lo);
+  let halfSide = searchDist * 1000;
+  // Radius of Earth at given latitude
+  let radius = WGS84EarthRadius(lat);
+  // Radius of the parallel at given latitude
+  let pradius = radius * Math.cos(lat);
+  let latMin = rad2deg(lat - halfSide / radius);
+  let latMax = rad2deg(lat + halfSide / radius); // latmax - latmin should be ~ 2 degrees
+  let lonMin = rad2deg(lon - halfSide / pradius);
+  let lonMax = rad2deg(lon + halfSide / pradius);
+  // Re-project
+  let x = projection([lonMin, la])[0];
+  let y = projection([lo, latMax])[1];
+  let h = projection([lo, latMin])[1] - y;
+  let w = projection([lonMax, la])[0] - x;
+  return [x + w / 2, y + h / 2, w, h];
+}
+function mousemoved (e) {
+  let metroCity = "None";
+  let thisPosition = ", [" + d3.mouse(this).toString() +"], ";
+  let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
+  if (document.getElementById("mcControls").style.visibility === "visible") { // WIP projection active
+    let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
+    let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
+    let mcId = colorToId[mcColor];
+    let mcInf = cityData.find(d => d.i === mcId);
+    if (mcInf) metroCity = mcInf.n + ", id: " + mcId + ", pop: " + mcInf.p + ", color: " + mcColor;
+  } else {
+    metroCity = search(...d3.mouse(this));
+    if (metroCity && metroCity.n) {
+      metroCity = metroCity.n + ", id: " + metroCity.i + ", pop: " + metroCity.p + ", color: " + idToColor[metroCity.i];
+    } else {
+      metroCity = "None";
+    }
+  }
+  info.textContent = metroCity + thisPosition + thisLatLong;
 }
