@@ -53,8 +53,9 @@ function runAgglomeration() {
     // Northern Rhine Area?
     // Basel-Mulhouse-Freiburg?
   };
-  d3.tsv("res/cities15000.txt", (err, dat) => {
-  //d3.tsv("res/cities500.txt", (err, dat) => {
+  //d3.tsv("res/cities15000.txt", (err, dat) => {
+  //d3.tsv("res/cities5000.txt", (err, dat) => {
+  d3.tsv("res/cities1000.txt", (err, dat) => {
     let allQtBound = new Rectangle(width / 2, height / 2, width * 300 / 6, height * 150 / 4);
     let allQuad = new QuadTree(allQtBound, 1);
     if (err) throw err;
@@ -64,7 +65,7 @@ function runAgglomeration() {
       let isCandidate = isVital || cityData.some(c => c.i === +d.geonameid);
       let countryCode = d["country code"]
       let state = countryCode === "US" ? ", (" + d["admin1 code"] + ")" : ""; // Other countries have states, but need decoding
-      let displayName = d.name + state + ", " + countryCode;
+      let displayName = d.asciiname + state + ", " + countryCode;
       let color = idToColor[d.geonameid] || "rgba(0,0,0,1)";
       agglomData[d.geonameid] = new City(+d.geonameid, x, y, +d.latitude, +d.longitude, +d.population, displayName, countryCode, color, isVital, isCandidate, []);
       let pt = new Point(x, y, {id: +d.geonameid, pop: +d.population, name: displayName, countryCode: countryCode, lat: +d.latitude, lon: +d.longitude, x: x, y: y});
@@ -74,7 +75,6 @@ function runAgglomeration() {
     Object.keys(agglomData)
       .forEach(c => {
         let neighbourCandidates = searchQt(allQuad, agglomData[c].x, agglomData[c].y).filter(n => n.id !== agglomData[c].id && n.countryCode === agglomData[c].countryCode);
-        if (c == 2644559) console.log(neighbourCandidates);
         if (!agglomData[c].isCandidate) {
           neighbourCandidates = neighbourCandidates.filter(n => agglomData[n.id].isCandidate); // Food will only be testing vs. neighbours which can consume it, not other food
           // Add a property to each neighbour stating the current influence power
@@ -86,6 +86,7 @@ function runAgglomeration() {
         agglomData[c].neighbours = neighbourCandidates;
       });
     console.log("Neighbours found");
+    /*
     // Vital cities get to hunt first and can consume up to 3 to get an early start
     // Candidate (inc vital) cities get to hunt and can consume up to 3
     for (let i = 0; i < 100; i++) {
@@ -94,9 +95,17 @@ function runAgglomeration() {
       vitals.forEach(c => agglomData[c].hunt(agglomData, 5));
       cands.forEach(c => agglomData[c].hunt(agglomData, 3));
     }
+    */
+    for (let i = 0; i < 2; i++) {
+      Object.values(agglomData).forEach(c => c.agglomerate(agglomData));
+      // Recalculate influce of each neighbour else further iterations do nothing
+      for (c of Object.values(agglomData).filter(d => !d.isCandidate)) {
+        for (let n of c.neighbours) n.influence = agglomData[n.id].calcInfluence(n.distance);
+      }
+    }
     console.log("Agglomeration complete");
     showAlgoResult();
-  });
+  })
   function searchQt (qt, x, y) {
     // Given a projected x, y, return locations within 100 km radius
     let range = new Rectangle(...projBBox(x, y, true));

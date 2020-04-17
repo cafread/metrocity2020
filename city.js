@@ -72,19 +72,19 @@ class City {
         }
     }
   }
-  findMostInfluential (cityData) {
+  agglomerate (cityData) {
     // Prey seeking out the most influential mc neighbour amongst candidates
     // The result will change as the algo iterates and MC pops grow
     // This should be run for all several times as the MC pops will change after each run
     // -- What about candidates consuming one another?  Separate step?
     if (!this.isCandidate && this.neighbours.length > 0) {
       // Update neighbour influence once round is complete to reflect new MC Pops
-      let mc = this.neighbours.sort((a, b) => b.influence - a.influence).filter(n => cityData[n.id].parentCity === null)[0]];
+      let mc = this.neighbours.sort((a, b) => b.influence - a.influence).filter(n => cityData[n.id].parentCity === null)[0];
       // Need to filter for mc candidates which have not yet been consumed, otherwise we will likely have the same result as original mapping
       // If the current parent mc was consumed, this must be released if it wasn't already
       if (mc === undefined) {
         if (this.parentCity !== null) this.released();
-      } else if (cityData[mc.id].canConsume(this, mc.distance) && this.parentCity.id !== mc.id) {
+      } else if (cityData[mc.id].canConsume(this, mc.distance) && (this.parentCity === null || this.parentCity.id !== mc.id)) {
         if (this.parentCity !== null) this.parentCity.unConsume(this);
         cityData[mc.id].consume(this);
       }
@@ -92,12 +92,12 @@ class City {
   }
   canConsume (target, distance) {
     if (this.MCpop < target.MCpop) return false;
-    if ((0.7 * this.calcInfluence(distance)) > target.calcInfluence(0)) return true;
+    if ((1.0 * this.calcInfluence(distance)) > target.calcInfluence(0)) return true;
     // Magic number - higher > more agglomeration, lower > independent cities
     return false;
   }
   calcInfluence (distance=0) {
-    return Math.sqrt(this.MCpop) * (100 - distance);
+    return Math.pow(this.MCpop, 0.25) * (100 - distance);
   }
   show (canvasContext, labelContext) {
     // Plot city, lines to children / parent
