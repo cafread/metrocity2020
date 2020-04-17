@@ -26,10 +26,12 @@
     </div>
     <script type="text/javascript" src="res/utils.js"></script>
     <script type="text/javascript" src="res/excludedGeoIds.js"></script>
+    <script type="text/javascript" src="agglomeration.js"></script>
+    <script type="text/javascript" src="city.js"></script>
     <script type="text/javascript" src="canvas_cities.js"></script>
     <script type="text/javascript" src="output_drawing.js"></script>
-    <script type="text/javascript" src="city.js"></script>
     <button id="mapMCs" onclick="mapMCs()">Map MCs</button>
+    <button id="runAlgo" onclick="runAgglomeration()">Run Algo</button>
     <button id="dispWIP" onclick="dispWIP()">Display WIP</button>
     <div id="mcControls" style="visibility: hidden;">
       <div>Output Opacity: <input class="slider" type="range" min="1" max="100" value="50" id="opacityRange" oninput="setOpacity(this.value, ['outputCanvas', 'editCanvas'])"></input></div>

@@ -60,16 +60,20 @@ function createMap () {
 function drawCanvas () {
   if (isFrozen) return;
   quadtree = new QuadTree(qtBound, 1);
-  cityData.filter(d => d.show).forEach(d => {
-    let pt = new Point(d.x, d.y, d);
-    quadtree.insert(pt);
-    citiesContext.beginPath();
-		citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
-		//citiesContext.fillStyle = d.p < 30000 ? "red" : "black";
-		citiesContext.fillStyle = d.f;
-    citiesContext.fill();
-    citiesContext.closePath();
-  });
+  if (Object.keys(agglomData).length > 0) {
+    showAlgoResult ();
+  } else {
+    cityData.filter(d => d.show).forEach(d => {
+      let pt = new Point(d.x, d.y, d);
+      quadtree.insert(pt);
+      citiesContext.beginPath();
+      citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
+      //citiesContext.fillStyle = d.p < 30000 ? "red" : "black";
+      citiesContext.fillStyle = d.f;
+      citiesContext.fill();
+      citiesContext.closePath();
+    });
+  }
 }
 function reDraw () {
   if (isFrozen) return;

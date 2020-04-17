@@ -88,6 +88,11 @@ button {
 #dispWIP {
   position: fixed;
   top: 10px;
+  left: 1880px;
+}
+#runAlgo {
+  position: fixed;
+  top: 10px;
   left: 1720px;
 }
 #downloadZip {
