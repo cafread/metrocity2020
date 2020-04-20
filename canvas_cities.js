@@ -115,6 +115,7 @@ function zoomed () {
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
   d3.selectAll(".masterTile").style("opacity", 0.15);
+  //d3.selectAll(".masterTile").style("opacity", 0.0);
   let master = mapLayer
     .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".masterTile")
