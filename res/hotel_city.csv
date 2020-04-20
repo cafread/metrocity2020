@@ -1,4 +1,4 @@
-place_id,usage_2019,hotl_city,hotl_lat,hotl_lon,country_name,country_code,city_id,city_name,city_lat,city_lon
+place_id,weighting,hotl_city,hotl_lat,hotl_lon,country_name,country_code,city_id,city_name,city_lat,city_lon
 ChIJW07DCiDtyjERTwnKEBNlZAs,9,Ipoh,4.6216020000,101.1167150000,Malaysia,MY,126339,Ipoh,4.584100,101.082900
 ChIJW0E-DVWg1RIREwpXE4yFQTk,10,Camaiore,43.9057670000,10.2170930000,Italy,IT,99795,Camaiore,43.942650,10.297540
 ChIJW0Hqv-QerYcRU_y4Le3M9kk,26,Lawton,34.6216275000,-98.4281184000,United States,US,169622,Lawton,34.608690,-98.390330

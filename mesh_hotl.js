@@ -6,7 +6,7 @@ var idToColor = {"0": "#000000", "": "#000000"};
 var cityData = [];
 d3.csv("res/hotel_city.csv", (err, dat) => {
   if (err) throw err;
-  cityData = dat.sort((a, b) => b.usage_2019 - a.usage_2019);
+  cityData = dat.sort((a, b) => b.weighting - a.weighting);
   dat.forEach(d => colorGen_mk(d.city_id));
   createMap();
 });
@@ -42,7 +42,7 @@ function createMap () {
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.hotl_lon, d.hotl_lat]);
     [d.x2, d.y2] = projection([d.city_lon, d.city_lat]);
-    d.r = rad * Math.sqrt(d.usage_2019);
+    d.r = rad * Math.sqrt(d.weighting);
     d.f = idToColor[d.city_id];
     d.show = offScreenTest (d.x, d.y);
     return d;
@@ -101,7 +101,7 @@ function zoomed () {
   cityData = cityData.map(d => {
     [d.x, d.y] = projection([d.hotl_lon, d.hotl_lat]);
     [d.x2, d.y2] = projection([d.city_lon, d.city_lat]);
-    d.r = rad * Math.sqrt(d.usage_2019);
+    d.r = rad * Math.sqrt(d.weighting);
     d.show = offScreenTest (d.x, d.y);
     return d;
   });
