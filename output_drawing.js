@@ -33,22 +33,20 @@ function topLeftTile () {
   let minTileY = d3.min(tileCoords, d => +d[1]);
   return [minTileX, minTileY];
 }
-function dataToTile (x, y, source="localStorage") {
+function dataToTile (x, y, source="localStorage", xCount=6, yCount=4) {
   // Given the upper left x & y tile details, pull from localStorage all saved tiles
   let tileX = 0;
   let tileY = 0;
   let tileKey = "";
   let lsVal = "";
   let imgSrc = "";
-  while (tileY < 4) {
-    while (tileX < 6) {
+  while (tileY < yCount) {
+    while (tileX < xCount) {
       tileKey = lpad(x + tileX, 3) + "_" + lpad(y + tileY, 3);
-      if (source === "localStorage") {
-        lsVal = localStorage.getItem(tileKey);
-        if (lsVal !== null) {
-          imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
-          drawWipTile (tileX, tileY, imgSrc);
-        }
+      lsVal = localStorage.getItem(tileKey);
+      if (source === "localStorage" && lsVal !== null) {
+        imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
+        drawWipTile (tileX, tileY, imgSrc);
       } else { // Source is Master
         imgSrc = "tiles/" + tileKey + ".png";
         drawWipTile (tileX, tileY, imgSrc);
