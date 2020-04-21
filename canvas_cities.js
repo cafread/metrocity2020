@@ -1,15 +1,14 @@
-
-const mastTileKeys = listTiles ();
 const nullTile = "data:image/octet-stream;base64,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";
 let nullTile2 = "data:image/octet-stream;base64,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"
 const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
 const width  = 1536; // 256 * 6 and tiles are 256x256 pixels
 const height = 1024; // 256 * 4
-const prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 let cityData = [];
 let isFrozen = false;
+// Put this, canvas initiation, mastTileKeys in an onload completed async function and call render once complete
+// Could also kick off algo run, then present the ability to switch
+// Need to add border opacity control as well
 d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
-//d3.json("res/2020cities15k.json", (err, dat) => {
   if (err) throw err;
   cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
   cityData.forEach(d => colorGen(d.i));
@@ -30,7 +29,6 @@ let container = d3.select("#container")
     .on("mousemove", mousemoved);
 
 let chart = d3.select("#citiesCanvas")
-    .attr("class", "mapLayer")
     .attr("width", width)
     .attr("height", height);
 let citiesContext = chart.node().getContext("2d");
@@ -51,7 +49,7 @@ hiddenCanvas.height = 256;
 let hiddenContext = hiddenCanvas.getContext("2d");
 
 let penColor = "rgba(255,255,255,1)";
-let mapLayer = d3.select(".mapLayer");
+let mapLayer = d3.select("#mapLayer");
 let info = document.getElementById("info");
 let quadtree;
 let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
@@ -101,7 +99,6 @@ function reDraw () {
 function zoomed () {
   if (isFrozen) return;
   // Update projection
-  // translateExtent([[-27, 21], [27, 0]]) // Testing
   projection
     .scale(zoom.scale() / 2 / Math.PI)
     .translate(zoom.translate());
@@ -117,7 +114,7 @@ function zoomed () {
   // Map tiles
   let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
   let image = mapLayer
-    .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
+    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".tile")
       .data(tiles, d => d);
   image.exit().remove();
@@ -128,7 +125,7 @@ function zoomed () {
     .style("top",  d => (d[1] << 8) + "px");
   d3.selectAll(".masterTile").style("opacity", 0.15);
   let master = mapLayer
-    .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
+    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".masterTile")
       .data(tiles, d => d);
       master.exit().remove();
@@ -138,7 +135,6 @@ function zoomed () {
       let tileKey = lpad(d[0], 3) + "_" + lpad(d[1], 3);
       if (mastTileKeys.indexOf(tileKey) === -1) return "tiles/none.png";
       if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
-      //if (Object.keys(localStorage).length > 1 && localStorage.getItem(tileKey) === null) return "tiles/none.png";
       return "tiles/" + tileKey + ".png";
     })
     .attr("onerror", "this.src='tiles/none.png'")
@@ -396,6 +392,7 @@ function mousemoved (e) {
   info.textContent = metroCity + thisPosition + thisLatLong;
 }
 function listTiles () {
+  // For updating list of master tiles
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open('GET', "/tiles/", false); // False for synchronous request
   xmlHttp.send(null);

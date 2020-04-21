@@ -38,10 +38,6 @@ html, body {
   top: 0;
   left: 0;
 }
-.mapLayer {
-  position: absolute;
-  z-index: -10;
-}
 .tile,
 .masterTile {
   pointer-events: none;
