@@ -33,23 +33,25 @@ function topLeftTile () {
   let minTileY = d3.min(tileCoords, d => +d[1]);
   return [minTileX, minTileY];
 }
-function dataToTile (x, y, source="localStorage", xCount=6, yCount=4) {
+function dataToTile (x, y, source="localStorage") {
   // Given the upper left x & y tile details, pull from localStorage all saved tiles
   let tileX = 0;
   let tileY = 0;
   let tileKey = "";
   let lsVal = "";
   let imgSrc = "";
-  while (tileY < yCount) {
-    while (tileX < xCount) {
+  while (tileY < 4) {
+    while (tileX < 6) {
       tileKey = lpad(x + tileX, 3) + "_" + lpad(y + tileY, 3);
       lsVal = localStorage.getItem(tileKey);
       if (source === "localStorage" && lsVal !== null) {
         imgSrc = tileCode + LZString.decompress(lsVal).replace("image/octet-stream", "image/png");
         drawWipTile (tileX, tileY, imgSrc);
       } else { // Source is Master
-        imgSrc = "tiles/" + tileKey + ".png";
-        drawWipTile (tileX, tileY, imgSrc);
+        if (mastTileKeys.indexOf(tileKey) > -1) {
+          imgSrc = "tiles/" + tileKey + ".png";
+          drawWipTile (tileX, tileY, imgSrc);
+        }
       }
       tileX++;
     }
@@ -62,10 +64,8 @@ function dataToTile (x, y, source="localStorage", xCount=6, yCount=4) {
 function drawWipTile (tileX, tileY, imgSrc) {
   let offsX = 256 * tileX;
   let offsY = 256 * tileY;
-  let outCanvas = document.getElementById("outputCanvas");
-  let outContext = outCanvas.getContext("2d");
   let masterTile = new Image();
-  masterTile.onload = function(){outContext.drawImage(masterTile, offsX, offsY, 256, 256);};
+  masterTile.onload = function(){outputContext.drawImage(masterTile, offsX, offsY, 256, 256);};
   masterTile.src = imgSrc;
 }
 function toggleFrozen () {
@@ -180,6 +180,7 @@ function transferArt () {
   editState.clickX.length = 0;
   editState.clickY.length = 0;
   editState.clickDrag.length = 0;
+  outputContext.globalCompositeOperation = "source-over"; // In case we were erasing
 }
 function addPaint () {
   // Now to do the painty bit itself

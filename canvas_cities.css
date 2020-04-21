@@ -31,7 +31,8 @@ html, body {
   z-index: 100;
 }
 #outputCanvas,
-#editCanvas {
+#editCanvas,
+#labelCanvas {
   opacity: 0.5;
   position: fixed;
   top: 0;

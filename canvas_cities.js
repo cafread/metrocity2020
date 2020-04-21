@@ -1,5 +1,5 @@
 
-
+const mastTileKeys = listTiles ();
 const nullTile = "data:image/octet-stream;base64,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";
 let nullTile2 = "data:image/octet-stream;base64,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"
 const tileCode = "data:image/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAA"; // Tile results all start with this
@@ -10,7 +10,7 @@ let cityData = [];
 let isFrozen = false;
 d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
 //d3.json("res/2020cities15k.json", (err, dat) => {
-    if (err) throw err;
+  if (err) throw err;
   cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
   cityData.forEach(d => colorGen(d.i));
   createMap();
@@ -28,16 +28,29 @@ let container = d3.select("#container")
     .style("height", height + "px")
     .call(zoom)
     .on("mousemove", mousemoved);
+
 let chart = d3.select("#citiesCanvas")
     .attr("class", "mapLayer")
     .attr("width", width)
     .attr("height", height);
-let output = d3.select("#outputCanvas")
-    .attr("width", width)
-    .attr("height", height);
-let penColor = "rgba(255,255,255,1)";
 let citiesContext = chart.node().getContext("2d");
-let outputContext = output.node().getContext("2d");
+
+let outputCanvas = document.getElementById("outputCanvas");
+outputCanvas.width = width;
+outputCanvas.height = height;
+let outputContext = outputCanvas.getContext("2d");
+
+let labelCanvas = document.getElementById("labelCanvas");
+labelCanvas.width = width;
+labelCanvas.height = height;
+let labelContext = labelCanvas.getContext("2d");
+
+let hiddenCanvas = document.getElementById("hiddenCanvas");
+hiddenCanvas.width = 256;
+hiddenCanvas.height = 256;
+let hiddenContext = hiddenCanvas.getContext("2d");
+
+let penColor = "rgba(255,255,255,1)";
 let mapLayer = d3.select(".mapLayer");
 let info = document.getElementById("info");
 let quadtree;
@@ -68,7 +81,6 @@ function drawCanvas () {
       quadtree.insert(pt);
       citiesContext.beginPath();
       citiesContext.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
-      //citiesContext.fillStyle = d.p < 30000 ? "red" : "black";
       citiesContext.fillStyle = d.f;
       citiesContext.fill();
       citiesContext.closePath();
@@ -115,7 +127,6 @@ function zoomed () {
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
   d3.selectAll(".masterTile").style("opacity", 0.15);
-  //d3.selectAll(".masterTile").style("opacity", 0.0);
   let master = mapLayer
     .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
     .selectAll(".masterTile")
@@ -124,8 +135,9 @@ function zoomed () {
   master.enter().append("img")
     .attr("class", "masterTile")
     .attr("src", d => {
-      if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
       let tileKey = lpad(d[0], 3) + "_" + lpad(d[1], 3);
+      if (mastTileKeys.indexOf(tileKey) === -1) return "tiles/none.png";
+      if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
       //if (Object.keys(localStorage).length > 1 && localStorage.getItem(tileKey) === null) return "tiles/none.png";
       return "tiles/" + tileKey + ".png";
     })
@@ -246,25 +258,20 @@ function moveToTile (x=60, y=40) {
 }
 function persistResult () {
   let [minTileX, minTileY] = topLeftTile ();
-  let outCanvas = document.getElementById("outputCanvas");
-  let hiddenCanvas = document.getElementById("hiddenCanvas");
-  hiddenCanvas.width = 256;
-  hiddenCanvas.height = 256;
-  let hiddenContext = hiddenCanvas.getContext("2d");
   let row = 0;
   let col = 0;
   let outTile;
-  let _key = "";
+  let tileKey = "";
   while (row < 4) { // Row is our Y
     while (col < 6) { // Col is our X
       if (minTileX + col < 128) {
         hiddenContext.clearRect(0, 0, 256, 256);
-        hiddenContext.drawImage(outCanvas, col * 256, row * 256, 256, 256, 0, 0, 256, 256);
+        hiddenContext.drawImage(outputCanvas, col * 256, row * 256, 256, 256, 0, 0, 256, 256);
         outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
         if (outTile !== nullTile && outTile != nullTile2) {
-          _key = lpad(minTileX + col, 3) + "_" + lpad(minTileY + row, 3);
+          tileKey = lpad(minTileX + col, 3) + "_" + lpad(minTileY + row, 3);
           let compressedTile = LZString.compress(outTile.replace(tileCode, ""));
-          localStorage.setItem(_key, compressedTile);
+          localStorage.setItem(tileKey, compressedTile);
         }
         col++;
       } else {
@@ -297,13 +304,8 @@ function getTileData (x, y) {
 function createReferenceNullTile () {
   // Creates a null tile specific to this browser to avoid breaking on browser updates to canvas handling
   // Called once on load
-  let outCanvas = document.getElementById("outputCanvas");
-  let hiddenCanvas = document.getElementById("hiddenCanvas");
-  hiddenCanvas.width = 256;
-  hiddenCanvas.height = 256;
-  let hiddenContext = hiddenCanvas.getContext("2d");
   hiddenContext.clearRect(0, 0, 256, 256);
-  hiddenContext.drawImage(outCanvas, 0, 0, 256, 256, 0, 0, 256, 256);
+  hiddenContext.drawImage(outputCanvas, 0, 0, 256, 256, 0, 0, 256, 256);
   let outTile = hiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
   if (outTile !== nullTile && outTile != nullTile2) {
     nullTile2 = outTile;
@@ -392,4 +394,10 @@ function mousemoved (e) {
     }
   }
   info.textContent = metroCity + thisPosition + thisLatLong;
+}
+function listTiles () {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open('GET', "/tiles/", false); // False for synchronous request
+  xmlHttp.send(null);
+  return xmlHttp.responseText.split('addRow("').slice(3, 10000).map(f => f.substr(0, 7));
 }

@@ -125,10 +125,10 @@ function runAgglomeration() {
 }
 function showAlgoResult () {
   citiesContext.clearRect(0, 0, width, height);
-  outputContext.clearRect(0, 0, width, height);
+  labelContext.clearRect(0, 0, width, height);
   Object.values(agglomData).forEach(d => [d.x, d.y] = projection([d.lon, d.lat]));
   Object.values(agglomData)
     .filter(d => offScreenTest(d.x, d.y))
     .filter(d => d.isCandidate)
-    .forEach(c => c.show(citiesContext, outputContext));
+    .forEach(c => c.show(citiesContext, labelContext));
 }
