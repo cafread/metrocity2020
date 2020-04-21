@@ -5,6 +5,9 @@ const width  = 1536; // 256 * 6 and tiles are 256x256 pixels
 const height = 1024; // 256 * 4
 let cityData = [];
 let isFrozen = false;
+let penColor = "rgba(255,255,255,1)";
+let quadtree;
+let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 // Put this, canvas initiation, mastTileKeys in an onload completed async function and call render once complete
 // Could also kick off algo run, then present the ability to switch
 // Need to add border opacity control as well
@@ -14,7 +17,6 @@ d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
   cityData.forEach(d => colorGen(d.i));
   createMap();
 });
-let tile = d3.geo.tile().size([width, height]);
 let projection = d3.geo.mercator()
     .scale(1 << 15)
     .translate([-width / 2, -height / 2]);
@@ -28,10 +30,10 @@ let container = d3.select("#container")
     .call(zoom)
     .on("mousemove", mousemoved);
 
-let chart = d3.select("#citiesCanvas")
-    .attr("width", width)
-    .attr("height", height);
-let citiesContext = chart.node().getContext("2d");
+let citiesCanvas = document.getElementById("citiesCanvas");
+citiesCanvas.width = width;
+citiesCanvas.height = height;
+let citiesContext = citiesCanvas.getContext("2d");
 
 let outputCanvas = document.getElementById("outputCanvas");
 outputCanvas.width = width;
@@ -48,11 +50,6 @@ hiddenCanvas.width = 256;
 hiddenCanvas.height = 256;
 let hiddenContext = hiddenCanvas.getContext("2d");
 
-let penColor = "rgba(255,255,255,1)";
-let mapLayer = d3.select("#mapLayer");
-let info = document.getElementById("info");
-let quadtree;
-let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 moveToTile();
 
 function createMap () {
@@ -111,36 +108,49 @@ function zoomed () {
     return d;
   });
   reDraw();
-  // Map tiles
-  let tiles = tile.scale(zoom.scale()).translate(zoom.translate())();
-  let image = mapLayer
-    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(tiles.scale, tiles.translate))
+  // Map and master result
+  let mapTiles = d3.geo.tile().size([width, height]).scale(zoom.scale()).translate(zoom.translate())();
+  let cartoDbTiles = d3.select("#mapLayer")
+    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(mapTiles.scale, mapTiles.translate))
     .selectAll(".tile")
-      .data(tiles, d => d);
-  image.exit().remove();
-  image.enter().append("img")
+      .data(mapTiles, d => d);
+  cartoDbTiles.exit().remove();
+  cartoDbTiles.enter().append("img")
     .attr("class", "tile")
-    .attr("src", d => d[0] > 127 ? "tiles/none.png" : "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + d[2] + "/" + d[0] + "/" + d[1] + ".png")
+    .attr("src", d => genCartoDbTileUrl (d))
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
   d3.selectAll(".masterTile").style("opacity", 0.15);
-  let master = mapLayer
-    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(tiles.scale, tiles.translate))
+  let masterTiles = d3.select("#mapLayer")
+    .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(mapTiles.scale, mapTiles.translate))
     .selectAll(".masterTile")
-      .data(tiles, d => d);
-      master.exit().remove();
-  master.enter().append("img")
+      .data(mapTiles, d => d);
+  masterTiles.exit().remove();
+  masterTiles.enter().append("img")
     .attr("class", "masterTile")
-    .attr("src", d => {
-      let tileKey = lpad(d[0], 3) + "_" + lpad(d[1], 3);
-      if (mastTileKeys.indexOf(tileKey) === -1) return "tiles/none.png";
-      if (d[0] > 127 || d[1] < 17 || d[1] > 87) return "tiles/none.png";
-      return "tiles/" + tileKey + ".png";
-    })
+    .attr("src", d => genTileUrl(d))
     .attr("onerror", "this.src='tiles/none.png'")
     .style("opacity", 0.15)
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
+}
+function genCartoDbTileUrl (d) {
+  if (d=== undefined || d.length === 0) return "tiles/none.png";
+  let [xTile, yTile, zoomLevel] = d;
+  if (d[0] <   0) xTile += 128; // 0-127 is specific to this zoom level
+  if (d[0] > 127) xTile -= 128;
+  let cartoDbTileUrl = "https://" + ["a", "b", "c"][Math.random() * 3 | 0] + ".basemaps.cartocdn.com/light_all/" + zoomLevel + "/" + xTile + "/" + yTile + ".png";
+  return cartoDbTileUrl;
+}
+function genTileUrl (d) {
+  if (d=== undefined || d.length === 0) return "tiles/none.png";
+  let [xTile, yTile, zoomLevel] = d;
+  if (yTile < 17 || yTile > 87) return "tiles/none.png";
+  if (d[0] <   0) xTile += 128; // 0-127 is specific to this zoom level
+  if (d[0] > 127) xTile -= 128;
+  let tileKey = lpad(xTile, 3) + "_" + lpad(yTile, 3);
+  if (mastTileKeys.indexOf(tileKey) === -1) return "tiles/none.png";
+  return "tiles/" + tileKey + ".png";
 }
 function search (x, y) {
   // Given a projected x, y, return the most influential metro city
@@ -389,7 +399,7 @@ function mousemoved (e) {
       metroCity = "None";
     }
   }
-  info.textContent = metroCity + thisPosition + thisLatLong;
+  document.getElementById("info").textContent = metroCity + thisPosition + thisLatLong;
 }
 function listTiles () {
   // For updating list of master tiles
