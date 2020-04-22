@@ -60,3 +60,43 @@ function prefixMatch (p) {
   }
   return "";
 }
+function d3GeoTile () {
+  let size = [1536, 1024];
+  let scale = 256;
+  let translate = [size[0] / 2, size[1] / 2];
+  let zoomDelta = 0;
+  function tile() {
+    let z = Math.max(Math.log(scale) / Math.LN2 - 8, 0);
+    let z0 = Math.round(z + zoomDelta);
+    let k = Math.pow(2, z - z0 + 8);
+    let origin = [(translate[0] - scale / 2) / k, (translate[1] - scale / 2) / k];
+    let tiles = [];
+    let cols = d3.range(Math.max(0, Math.floor(-origin[0])), Math.max(0, Math.ceil(size[0] / k - origin[0])));
+    let rows = d3.range(Math.max(0, Math.floor(-origin[1])), Math.max(0, Math.ceil(size[1] / k - origin[1])));
+    rows.forEach(y => cols.forEach(x => tiles.push([x, y, z0])));
+    tiles.translate = origin;
+    tiles.scale = k;
+    return tiles;
+  }
+  tile.size = function (_) {
+    if (!arguments.length) return size;
+    size = _;
+    return tile;
+  };
+  tile.scale = function (_) {
+    if (!arguments.length) return scale;
+    scale = _;
+    return tile;
+  };
+  tile.translate = function (_) {
+    if (!arguments.length) return translate;
+    translate = _;
+    return tile;
+  };
+  tile.zoomDelta = function (_) {
+    if (!arguments.length) return zoomDelta;
+    zoomDelta = +_;
+    return tile;
+  };
+  return tile;
+};

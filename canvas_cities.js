@@ -109,7 +109,7 @@ function zoomed () {
   });
   reDraw();
   // Map and master result
-  let mapTiles = d3.geo.tile().size([width, height]).scale(zoom.scale()).translate(zoom.translate())();
+  let mapTiles = d3GeoTile().size([width, height]).scale(zoom.scale()).translate(zoom.translate())();
   let cartoDbTiles = d3.select("#mapLayer")
     .style(prefixMatch(["webkit", "ms", "Moz", "O"]) + "transform", matrix3d(mapTiles.scale, mapTiles.translate))
     .selectAll(".tile")
