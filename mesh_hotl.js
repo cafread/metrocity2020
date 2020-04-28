@@ -1,5 +1,7 @@
-const width  = window.innerWidth;
-const height = window.innerHeight;
+//const width  = window.innerWidth;
+//const height = window.innerHeight;
+const width  = 1536; // 256 * 6 and tiles are 256x256 pixels
+const height = 1024; // 256 * 4
 let prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
 var colorToId = {"#000000": 0};
 var idToColor = {"0": "#000000", "": "#000000"};

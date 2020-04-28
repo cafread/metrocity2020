@@ -1,5 +1,7 @@
 function setOpacity (sliderValue, elementIds=[]) {
-  for (let elid of elementIds) document.getElementById(elid).style.opacity = sliderValue / 100;
+  for (let elid of elementIds) {
+    if (document.getElementById(elid) !== null) document.getElementById(elid).style.opacity = sliderValue / 100;
+  }
 }
 function dispWIP () {
   // Get top left
@@ -72,7 +74,7 @@ function toggleFrozen () {
   isFrozen = document.getElementById("frozenToggle").checked;
   if (!isFrozen) {
     document.getElementById("outputCanvas").style.cursor = "pointer";
-    document.getElementById("mapMCs").style.visibility = "visible";
+    //document.getElementById("mapMCs").style.visibility = "visible";
     document.getElementById("dispWIP").style.visibility = "visible";
     document.getElementById("brushInfo").style.visibility = "hidden";
     d3.select("#outputCanvas").on("click", null);
@@ -83,7 +85,7 @@ function toggleFrozen () {
     enableSample ();
     penColor = "rgba(255,255,255,1)";
     document.getElementById("colorPot").style.background = penColor;
-    document.getElementById("mapMCs").style.visibility = "hidden";
+    //document.getElementById("mapMCs").style.visibility = "hidden";
     document.getElementById("dispWIP").style.visibility = "hidden";
     document.getElementById("brushInfo").style.visibility = "visible";
     editState.allowDrawing = false;
@@ -110,11 +112,10 @@ function enablePaint () {
 }
 function sampleOutput () {
   let [x, y] = d3.mouse(this);
-  let [r, g, b, a] = outputContext.getImageData(x, y, 1, 1).data;
-  let rgba = "rgba(" + r + "," + g + "," + b + ",1)"; // Ignore alpha channel
-  penColor = rgba;
+  console.log("Sampled", outputContext.getImageData(x, y, 1, 1).data);
+  let mcid = rgbaToId(outputContext.getImageData(x, y, 1, 1).data);
+  penColor = mcid ? idToColor[mcid] : "rgba(0,0,0,1)";
   document.getElementById("colorPot").style.background = penColor;
-  let mcid = colorToId[penColor];
   let mc = mcid ? cityData.find(d => d.i === mcid).n : "None";
   document.getElementById("paintCity").textContent = mc;
   enablePaint ();
@@ -155,32 +156,36 @@ function reDrawArt () {
 function transferArt () {
   // Takes the temporary work on the editCanvas and transfers it to the outputCanvas
   // This is only called once the edit work has completed and avoids glitchy drawing
-  editState.context.clearRect(0, 0, width, height); // Clears the edit canvas
+  // In order to get the exact rgb to combine with the output, getImageData is used
   editState.busyDrawing = false;
-  if (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") { // Erasing
-    outputContext.globalCompositeOperation = "destination-out";
-    outputContext.strokeStyle = "rgba(255,255,255,1)";
-  } else { // Drawing
-    outputContext.globalCompositeOperation = "source-over";
-    outputContext.strokeStyle = penColor;
+  let erasing = (penColor === "rgba(0,0,0,1)" || penColor === "rgba(255,255,255,1)") ? 0 : 255;
+  reDrawArt();
+  let drawData = editState.context.getImageData(0, 0, width, height);
+  let currData = outputContext.getImageData(0, 0, width, height).data;
+  let [r, g, b] = penColor.replace("rgba(", "").replace(",1)", "").split(",");
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      let pxr = 4 * (x + y * width); // Pixel is 4 entries: r, g, b, a
+      if (drawData.data[pxr + 3] > 127) { // Above threshold, apply paint
+        drawData.data[pxr    ] = r;
+        drawData.data[pxr + 1] = g;
+        drawData.data[pxr + 2] = b;
+        drawData.data[pxr + 3] = erasing;
+      } else { // Below threshold, maintain current value
+        drawData.data[pxr    ] = currData[pxr    ];
+        drawData.data[pxr + 1] = currData[pxr + 1];
+        drawData.data[pxr + 2] = currData[pxr + 2];
+        drawData.data[pxr + 3] = currData[pxr + 3];
+      }
+    }
   }
-  outputContext.lineJoin = "round";
-  outputContext.lineWidth = document.getElementById("brushSize").value;
-  for (let i = 0; i < editState.clickX.length; i++) {
-    outputContext.beginPath();
-    if (editState.clickDrag[i] && i) {
-      outputContext.moveTo(editState.clickX[i - 1], editState.clickY[i - 1]);
-     } else {
-      outputContext.moveTo(editState.clickX[i] - 1, editState.clickY[i]);
-     }
-     outputContext.lineTo(editState.clickX[i], editState.clickY[i]);
-     outputContext.closePath();
-     outputContext.stroke();
-  }
+  // Write generated data to the output canvas
+  outputContext.putImageData(drawData, 0, 0);
+  // Reset drawing canvas
+  editState.context.clearRect(0, 0, width, height);
   editState.clickX.length = 0;
   editState.clickY.length = 0;
   editState.clickDrag.length = 0;
-  outputContext.globalCompositeOperation = "source-over"; // In case we were erasing
 }
 function addPaint () {
   // Now to do the painty bit itself

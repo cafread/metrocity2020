@@ -9,12 +9,20 @@ function colorGen (id) {
   // Generates a unique color which can be mapped back to the id
   if (idToColor.hasOwnProperty(id)) return; // Dupe check
   console.log("unmapped id:" + id);
-  let colorCode = randomRGBA();
-  while (colorToId.hasOwnProperty(colorCode)) { // Dupe check
-    colorCode = randomRGBA();
+  let code = randomRGBA();
+  while (!isOriginalColor (code)) code = randomRGBA();
+  colorToId[code] = id;
+  idToColor[id] = code;
+}
+function isOriginalColor (code) {
+  // Check colorToId has space around each of r, g, b to avoid color collisions when the browser compresses it during Canvas.toDataURL
+  if (colorToId.hasOwnProperty(code)) return false;
+  let [r, g, b] = code.replace("rgba", "").replace(",1)", "").split(",");
+  for (let per of compressionDebug) {
+    code = "rgba(" + (r + per.r) + "," + (g + per.g) + "," + (b + per.b) + ",1)";
+    if (colorToId.hasOwnProperty(code)) return false;
   }
-  colorToId[colorCode] = id;
-  idToColor[id] = colorCode;
+  return true;
 }
 function randomRGBA () {
   let [r, g, b] = [Math.random()*255 | 0, Math.random()*255 | 0, Math.random()*255 | 0];

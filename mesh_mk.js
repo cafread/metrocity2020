@@ -110,6 +110,7 @@ function zoomed () {
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
   // Current MC result
+  /*
   d3.selectAll(".masterTile").style("opacity", 0.15);
   let master = mapLayer
     .style(prefix + "transform", matrix3d(tiles.scale, tiles.translate))
@@ -123,6 +124,7 @@ function zoomed () {
     .style("opacity", 0.15)
     .style("left", d => (d[0] << 8) + "px")
     .style("top",  d => (d[1] << 8) + "px");
+*/
 }
 function matrix3d (scale, translate) {
   let k = scale / 256, r = scale % 1 ? Number : Math.round;

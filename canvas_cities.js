@@ -12,6 +12,7 @@ let qtBound = new Rectangle(width / 2, height / 2, width * 1.2, height * 1.2);
 // Could also kick off algo run, then present the ability to switch
 // Need to add border opacity control as well
 d3.json("res/2020cities15k_trimmed.json", (err, dat) => {
+//d3.json("res/2020cities15k.json", (err, dat) => {
   if (err) throw err;
   cityData = dat.filter(d => excludedGeoIds.indexOf(d.i) === -1);
   cityData.forEach(d => colorGen(d.i));
@@ -173,10 +174,11 @@ function search (x, y) {
   return cands.filter(d => d.s > 0).sort((a, b) => b.s - a.s)[0];
 }
 function genScore (pop, dist) {
-  return Math.sqrt(pop) * (100 - dist);
+  //return Math.sqrt(pop) * (100 - dist);
+  return Math.pow(pop, 0.25) * (100 - dist);
 }
 function mapMCs (scl=8) {
-  if (isFrozen) return;
+  outputContext.clearRect(0, 0, width, height);
   reDraw(); // Just to be sure that things are ready
   let xCount = Math.floor(width / scl);
   let yCount = Math.floor(height / scl);
@@ -387,10 +389,9 @@ function mousemoved (e) {
   let thisLatLong = formatLocation(projection.invert(d3.mouse(this)), zoom.scale());
   if (document.getElementById("mcControls").style.visibility === "visible") { // WIP projection active
     let pixelData = outputContext.getImageData(d3.mouse(this)[0], d3.mouse(this)[1], 1, 1).data;
-    let mcColor = "rgba(" + pixelData[0] + "," + pixelData[1] +  "," + pixelData[2] + ",1)";
-    let mcId = colorToId[mcColor];
+    let mcId = rgbaToId(pixelData);
     let mcInf = cityData.find(d => d.i === mcId);
-    if (mcInf) metroCity = mcInf.n + ", id: " + mcId + ", pop: " + mcInf.p + ", color: " + mcColor;
+    if (mcInf) metroCity = mcInf.n + ", id: " + mcId + ", pop: " + mcInf.p + ", color: " + idToColor[mcId];
   } else {
     metroCity = search(...d3.mouse(this));
     if (metroCity && metroCity.n) {
@@ -407,4 +408,44 @@ function listTiles () {
   xmlHttp.open('GET', "/tiles/", false); // False for synchronous request
   xmlHttp.send(null);
   return xmlHttp.responseText.split('addRow("').slice(3, 10000).map(f => f.substr(0, 7));
+}
+function resultAudit () {
+  // Compare algorithm result with current master result
+  let [refX, refY] = projection([0, 0]);
+  for (let popCentre of Object.values(agglomData).filter(d => d.id == 2649069)) {
+    // Find the right tile
+    let [popX, popY] = projection([popCentre.lon, popCentre.lat]);
+    let xTile = 64 + Math.floor((popX - refX) / 256);
+    let yTile = 64 + Math.floor((popY - refY) / 256);
+    let tileURL = genTileUrl([xTile, yTile]);
+    if (tileURL !== "tiles/none.png") {
+      // Find the right pixel on the tile
+      let x = Math.floor(popX % 256);
+      let y = Math.floor(popY % 256);
+      masterTile = new Image();
+      masterTile.onload = function() {
+        hiddenContext.clearRect(0, 0, 256, 256);
+        hiddenContext.drawImage(masterTile, 0, 0, 256, 256, 0, 0, 256, 256);
+        let [r, g, b, a] = hiddenContext.getImageData(x | 0, y | 0, 1, 1).data;
+        let colorCode = "rgba(" + r + "," + g + "," + b + ",1)";
+        let masterMCID = rgbaToId(colorCode);
+        let algoMCID = popCentre.parentCity ? popCentre.parentCity.id : null;
+        popCentre.masterResult = agglomData[masterMCID];
+        popCentre.algoMatch = masterMCID == algoMCID;
+        console.log(agglomData[masterMCID]);
+      }
+      masterTile.src = tileURL;
+    }
+  }
+}
+function rgbaToId ([r, g, b, a]) {
+  if ([r, g, b].join("") === "000") return 0;
+  let code = "rgba(" + r + "," + g + "," + b + ",1)";
+  if (colorToId[code]) return colorToId[code];
+  for (let per of compressionDebug) {
+    code = "rgba(" + (r + per.r) + "," + (g + per.g) + "," + (b + per.b) + ",1)";
+    if (colorToId[code]) return colorToId[code];
+  }
+  console.log("Sample not matched", [r, g, b]);
+  return 0;
 }
