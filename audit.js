@@ -73,7 +73,7 @@ function getMasterTileData (tileURL, tileKey, auditObject) {
   masterTile.src = tileURL;
 }
 function makeCsvData () {
-  let csvArr = Object.values(dbOutput).map(d => d.id + "," + d.lat + "," + d.lon + "," + d.mcid + ',"' + d.mcName + '"');
-  csvArr.unshift('"geonames_id","latitude","longitude","mc_geonames_id","mc_name"');
+  let csvArr = Object.values(dbOutput).filter(d => d.mcid).map(d => d.id + "," + d.lat + "," + d.lon + "," + d.mcid + ',"' + d.mcName + '","' + d.basicName + '"');
+  csvArr.unshift('"geonames_id","latitude","longitude","mc_geonames_id","mc_name","place_name"');
   return csvArr.join(",\r\n");
 }

@@ -4,13 +4,14 @@
 // Build an object with lots of cities in
 // Once this is full, call hunt() for each city so it will try to merge with its neighbours
 class City {
-  constructor (id, x=0, y=0, lat, lon, pop, name, countryCode, color, isVital=false, isCandidate=false, neighbours=[]) {
+  constructor (id, x=0, y=0, lat, lon, pop, basicName, name, countryCode, color, isVital=false, isCandidate=false, neighbours=[]) {
     this.id = id;
     this.x = x; // Reprojected on pan / zoom
     this.y = y; // Reprojected on pan / zoom
     this.lat = lat;
     this.lon = lon;
     this.pop = pop;
+    this.basicName = basicName;
     this.name = name;
     this.countryCode = countryCode;
     this.color = color;

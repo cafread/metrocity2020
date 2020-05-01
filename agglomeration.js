@@ -68,8 +68,8 @@ function runAgglomeration() {
       let state = countryCode === "US" ? ", (" + d["admin1 code"] + ")" : ""; // Other countries have states, but need decoding
       let displayName = d.asciiname + state + ", " + countryCode;
       let color = idToColor[d.geonameid] || "rgba(0,0,0,1)";
-      agglomData[d.geonameid] = new City(+d.geonameid, x, y, +d.latitude, +d.longitude, +d.population, displayName, countryCode, color, isVital, isCandidate, []);
-      let pt = new Point(x, y, {id: +d.geonameid, pop: +d.population, name: displayName, countryCode: countryCode, lat: +d.latitude, lon: +d.longitude, x: x, y: y});
+      agglomData[d.geonameid] = new City(+d.geonameid, x, y, +d.latitude, +d.longitude, +d.population, d.asciiname, displayName, countryCode, color, isVital, isCandidate, []);
+      let pt = new Point(x, y, {id: +d.geonameid, pop: +d.population, name: displayName, basicName: d.asciiname, countryCode: countryCode, lat: +d.latitude, lon: +d.longitude, x: x, y: y});
       allQuad.insert(pt);
     });
     console.log("Algo data made");
