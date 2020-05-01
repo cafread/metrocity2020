@@ -217,3 +217,14 @@ function initArt (canvas) {
   canvas.onmouseup = () => transferArt();
   canvas.onmouseleave = () => editState.busyDrawing = false;
 }
+function rgbaToId ([r, g, b, a], nolog=false) {
+  if ([r, g, b].join("") === "000") return 0;
+  let code = "rgba(" + r + "," + g + "," + b + ",1)";
+  if (colorToId[code]) return colorToId[code];
+  for (let per of compressionDebug) {
+    code = "rgba(" + (r + per.r) + "," + (g + per.g) + "," + (b + per.b) + ",1)";
+    if (colorToId[code]) return colorToId[code];
+  }
+  if (!nolog) console.log("Sample not matched", [r, g, b]);
+  return 0;
+}
