@@ -55,7 +55,7 @@ function runAudit () {
       id: d.id,
       lat: d.lat,
       lon: d.lon,
-      name: d.name,
+      basicName: d.basicName,
       mcid: mcid,
       mcName: mcName
     };
@@ -74,6 +74,6 @@ function getMasterTileData (tileURL, tileKey, auditObject) {
 }
 function makeCsvData () {
   let csvArr = Object.values(dbOutput).filter(d => d.mcid).map(d => d.id + "," + d.lat + "," + d.lon + "," + d.mcid + ',"' + d.mcName + '","' + d.basicName + '"');
-  csvArr.unshift('"geonames_id","latitude","longitude","mc_geonames_id","mc_name","place_name"');
+  csvArr.unshift('"geonames_id","latitude","longitude","mc_geonames_id","mc_name","basic_name"');
   return csvArr.join(",\r\n");
 }
